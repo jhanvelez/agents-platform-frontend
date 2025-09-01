@@ -1,0 +1,20 @@
+# 1. Base: imagen oficial ligera con Node.js
+FROM node:18-alpine
+
+# 2. Directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# 3. Copia los archivos de dependencias
+COPY package*.json ./
+
+# 4. Instala las dependencias
+RUN npm install
+
+# 5. Copia el resto del código
+COPY . .
+
+# 6. Expone el puerto 3000 (React por defecto)
+EXPOSE 3000
+
+# 7. Comando para arrancar la app
+CMD ["npm", "start"]
