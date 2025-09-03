@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Formik } from "formik";
 import {
   TrashIcon,
@@ -44,7 +45,7 @@ import {
   useRolesQuery,
   useStoreRolMutation,
   useToggleRolMutation
-} from "@/store/rols/roles.api"
+} from "@/store/roles/roles.api"
 
 // Types
 import { Rol } from "@/types/Rol"
@@ -56,6 +57,7 @@ import {
 } from "@/shared/schemas/rol.schema"
 
 export default function Roles() {
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeletedOpen, setIsDeletedOpen] = useState(false);
   const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
@@ -171,7 +173,9 @@ export default function Roles() {
                   <TableCell>{index+1}</TableCell>
                   <TableCell className="font-medium">{agent.name}</TableCell>
                   <TableCell className="max-w-[200px] truncate">
-                    <Button variant="outline" size="sm" onClick={() => handlePermissions(agent.id)}>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      router.push(`roles/${agent.id}/permissions`);
+                    }}>
                       <Shield className="h-3 w-3" />
                     </Button>
                   </TableCell>
@@ -291,44 +295,6 @@ export default function Roles() {
           </DialogFooter>
           </DialogContent>
       </Dialog>
-
-      {/** 
-       * Moidal for permissons
-       */}
-      <Dialog open={isPermissionsOpen} onOpenChange={setIsPermissionsOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <div>
-            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
-              <TrashIcon />
-            </div>
-            <div className="mt-3 text-center sm:mt-5">
-              <DialogTitle className="text-base font-semibold text-gray-900">
-                ¿Eliminar la empresa?
-              </DialogTitle>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">
-                  Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              <button
-                type="button"
-                data-autofocus
-                onClick={() => setIsPermissionsOpen(false)}
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-              >
-                Cerrar
-              </button>
-            </div>
-          </DialogFooter>
-          </DialogContent>
-      </Dialog>
-
-
     </div>
   );
 }
