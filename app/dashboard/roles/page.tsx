@@ -9,7 +9,6 @@ import {
   Plus,
   Edit,
   Trash2,
-  Sparkle,
 } from "lucide-react";
 import {
   Card,
@@ -150,7 +149,7 @@ export default function Roles() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-black">
-            <Sparkle className="h-5 w-5" />
+            <Shield className="h-5 w-5" />
             Lista de roles
           </CardTitle>
           <CardDescription>

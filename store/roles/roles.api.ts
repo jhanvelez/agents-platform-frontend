@@ -47,11 +47,18 @@ export const usersApi = api
           }),
         }),
       }),
-      deleteRol: builder.mutation({
+      addPermissionRol: builder.mutation({
         invalidatesTags: ["rol"],
-        query: ({ id }) => ({
-          url: `/tenants/${id}/toggle-status`,
-          method: RequestMethod.PATCH,
+        query: ({ rolId, permissionId }: { rolId: string, permissionId: string }) => ({
+          url: `/roles/${rolId}/permissions/${permissionId}/add`,
+          method: RequestMethod.POST,
+        }),
+      }),
+      removePermissionRol: builder.mutation({
+        invalidatesTags: ["rol"],
+        query: ({ rolId, permissionId }: { rolId: string, permissionId: string }) => ({
+          url: `/roles/${rolId}/permissions/${permissionId}/remove`,
+          method: RequestMethod.POST,
         }),
       }),
       ToggleRol: builder.mutation({
@@ -72,6 +79,7 @@ export const {
   useRolQuery,
   useStoreRolMutation,
   useUpdateRolMutation,
-  useDeleteRolMutation,
   useToggleRolMutation,
+  useAddPermissionRolMutation,
+  useRemovePermissionRolMutation,
 } = usersApi;

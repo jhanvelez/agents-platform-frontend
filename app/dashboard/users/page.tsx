@@ -48,11 +48,15 @@ import {
   useStoreUserMutation,
   useUpdateUserMutation,
   useToggleUserMutation,
-} from "@/store/users/users.api"
+} from "@/store/users/users.api";
+import {
+  useRolesQuery,
+} from "@/store/roles/roles.api";
 
 // Types
 import { User } from "@/types/User"
 import { Agent } from "@/types/agent"
+import { Rol } from "@/types/Rol"
 
 // Schemas
 import {
@@ -66,9 +70,14 @@ export default function Users() {
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 
   // API hooks
-  const { data: atentsData, refetch: refetchAtents } = useUsersQuery({ search: "" });
+  const { data: usersData, refetch: refetchAtents } = useUsersQuery({ search: "" });
+  const { data: rolesData, } = useRolesQuery({ search: "" });
   const [storeAtent, storeAtentResult] = useStoreUserMutation();
   const [deleteAtent, deleteAtentResult] = useToggleUserMutation();
+
+  useEffect(() => {
+    console.log(usersData)
+  }, [usersData])
 
   useEffect(() => {
     if (storeAtentResult.isSuccess) {
@@ -165,17 +174,25 @@ export default function Users() {
                 <TableHead>Nombre completo</TableHead>
                 <TableHead>Correo electrónico</TableHead>
                 <TableHead>Nº documento</TableHead>
+                <TableHead>Roles</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {atentsData && atentsData.map((agent: User, index: number) => (
+              {usersData && usersData.map((agent: User, index: number) => (
                 <TableRow key={index+1}>
                   <TableCell>{index+1}</TableCell>
                   <TableCell className="font-medium">{agent.firstName}{" "}{agent.lastName}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{agent.email}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{agent.documentType}{" / "}{agent.documentId}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {agent.roles.map((rol: Rol, index: number) => {
+                      return (
+                        <Badge key={`${index}-${agent.id}`} variant="outline">{rol.name}</Badge>
+                      );
+                    })}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -221,22 +238,24 @@ export default function Users() {
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nombre *</Label>
                       <Input
                         id="name"
                         name="firstName"
                         type="text"
+                        label="Nombre (s)"
+                        span="Obligatorio"
                         value={values.firstName}
                         onChange={handleChange}
                         placeholder="Nombre del usuario"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="maxAgents">Apellidos</Label>
                       <Input
                         id="lastName"
                         name="lastName"
                         type="text"
+                        label="Apellidos"
+                        span="Obligatorio"
                         value={values.lastName}
                         onChange={handleChange}
                         placeholder="Apellidos del usuario"
@@ -267,47 +286,70 @@ export default function Users() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="maxAgents">N de doocumento</Label>
                       <Input
                         id="documentId"
                         name="documentId"
                         type="text"
+                        label="Nº de doocumento"
+                        span="Obligatorio"
                         value={values.documentId}
                         onChange={handleChange}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="maxAgents">Número telefonico</Label>
                       <Input
                         id="phoneNumber"
                         name="phoneNumber"
-                        type="text"
+                        type="number"
+                        label="Número telefonico"
+                        span="Obligatorio"
                         value={values.phoneNumber}
                         onChange={handleChange}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="maxAgents">Correo electrónico</Label>
                       <Input
                         id="email"
                         name="email"
-                        type="text"
+                        type="email"
+                        label="Correo electrónico"
+                        span="Obligatorio"
                         value={values.email}
                         onChange={handleChange}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="maxAgents">Contraseña</Label>
                       <Input
                         id="password"
                         name="password"
-                        type="text"
+                        type="password"
+                        label="Contraseña"
+                        span="Obligatorio"
                         value={values.password}
                         onChange={handleChange}
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="documentType">Roles</Label>
+                      <Select
+                        value={values.roles[0]}
+                        onValueChange={(value) => setFieldValue("roles", [value])}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona el tipo de documento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {rolesData && rolesData.map((option: Rol) => (
+                            <SelectItem key={option.id} value={option.id}>
+                              {option.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
