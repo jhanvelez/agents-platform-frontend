@@ -13,14 +13,6 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo / Título */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 flex items-center justify-center text-white font-bold text-sm bg-black rounded-sm">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <div className="text-xl">
-                  <Bot className="w-full h-full text-neon" />
-                </div>
-              </div>
-            </div>
-
             <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
               Sustent<span className="font-thin">IA</span>tec
             </h1>

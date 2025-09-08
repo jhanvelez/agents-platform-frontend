@@ -219,7 +219,7 @@ export function Landing({ onGetStarted, onLogin }: LandingProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Bot className="h-8 w-8 text-primary-foreground" />
-              <span className="text-xl font-bold text-white">Agentes IA TEK</span>
+              <span className="text-xl font-bold text-white">Agentes IA ByBinary</span>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
               <a href="#features" className="text-primary-foreground hover:text-gray-500 transition-colors text-sm">

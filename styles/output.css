@@ -553,75 +553,99 @@ video {
 }
 
 :root {
-  --background: 0 0% 100%; /* Color de fondo */
-  --foreground: 0 0% 10%; /* Color del texto */
-  --card: 0 0% 100%; /* Color de las tarjetas */
-  --card-foreground: 240 100% 25%; /* Color de las tarjetas */
-  --popover: 0 0% 100%; /* Color del popover (fondo menús desplegables) */
-  --popover-foreground: 240 100% 25%; /* Color del texto del popover (menús desplegables) */
-  --primary: 180 100% 25%; /* Color primario */
-  --primary-foreground: 0 0% 98%; /* Color del texto primario */
-  --secondary: 240 100% 25%; /* Color secundario */
-  --secondary-foreground: 0 0% 98%; /* Color del texto secundario */
-  --muted: 0 0% 100%; /* Color atenuado */
-  --muted-foreground: 0 0% 45%; /* Color del texto atenuado */
-  --accent: 0 0% 96.1%; /* Color de acento (al pasar el cursor) */
-  --accent-foreground: 240 100% 25%; /*  Color del texto de acento (texto al pasar el cursor) */
-  --destructive: 0 72% 46%; /* Color destructivo (alertas) */
-  --destructive-foreground: 0 0% 98%; /* Color del texto destructivo  (color texto alertas)*/
-  --border: 0 0% 90%; /* Color del borde */
-  --input: 0 0% 89.8%; /* Color del fondo del input */
-  --ring: 0 0% 3.9%; /* Color del anillo */
-  --chart-1: 12 76% 61%; /* Color del gráfico 1 */
-  --chart-2: 173 58% 39%; /* Color del gráfico 2 */
-  --chart-3: 197 37% 24%; /* Color del gráfico 3 */
-  --chart-4: 43 74% 66%; /* Color del gráfico 4 */
-  --chart-5: 27 87% 67%; /* Color del gráfico 5 */
-  --radius: 0.5rem; /* Radio de los bordes */
-  --color-tasa: 0 0% 0%; /* Color de la tasa */
-  --sidebar-background: 240 100% 25%; /* Color de fondo de la barra lateral */
-  --sidebar-foreground: 0 0% 100%; /* Color de texto de la barra lateral */
-  --sidebar-primary: 240 100% 25%; /* Color primario de la barra lateral */
-  --sidebar-primary-foreground: 0 0% 28%; /* Color del texto primario de la barra lateral */
-  --sidebar-accent: 40 100% 25%; /* Color de acento de la barra lateral */
-  --sidebar-accent-foreground: 240 5.9% 10%; /* Color del texto de acento de la barra lateral */
-  --sidebar-border: 240 5.9% 10%; /* Color del borde de la barra lateral */
-  --sidebar-ring: 217.2 91.2% 59.8%; /* Color del anillo de la barra lateral */
+  --background: 0 0% 100%; /* Fondo blanco */
+  --foreground: 0 0% 10%; /* Texto gris oscuro (#1A1A1A) */
+  --card: 0 0% 100%; /* Fondo de tarjetas */
+  --card-foreground: 25 18% 25%; /* Marrón oscuro (#513C2F) */
+  --popover: 0 0% 100%; 
+  --popover-foreground: 25 18% 25%; 
+
+  --primary: 22 85% 53%; /* Naranja (#ed6a22) */
+  --primary-foreground: 0 0% 98%; /* Texto blanco sobre naranja */
+
+  --secondary: 107 23% 54%; /* Verde oliva suave (#7BA66B) */
+  --secondary-foreground: 0 0% 10%; /* Texto oscuro */
+
+  --muted: 42 96% 78%; /* Amarillo suave (#FDD48A) */
+  --muted-foreground: 25 18% 25%; /* Marrón oscuro */
+
+  --accent: 107 23% 54%; /* Verde oliva (#7BA66B) */
+  --accent-foreground: 0 0% 10%; /* Texto oscuro */
+
+  --destructive: 0 72% 46%; /* Rojo (alertas) */
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 90%; 
+  --input: 0 0% 89.8%;
+  --ring: 22 85% 53%; /* Anillo naranja */
+
+  /* Colores de gráficos */
+  --chart-1: 22 85% 53%;  /* Naranja */
+  --chart-2: 107 23% 54%; /* Verde oliva suave */
+  --chart-3: 82 88% 20%;  /* Verde oscuro (#5A7A0A) */
+  --chart-4: 42 96% 78%;  /* Amarillo suave */
+  --chart-5: 25 18% 25%;  /* Marrón oscuro */
+
+  --radius: 0.5rem;
+
+  --color-tasa: 0 0% 0%; /* Negro */
+  
+  /* Sidebar */
+  --sidebar-background: 25 18% 25%; /* Marrón oscuro (#513C2F) */
+  --sidebar-foreground: 0 0% 98%; /* Texto claro */
+  --sidebar-primary: 22 85% 53%; /* Naranja */
+  --sidebar-primary-foreground: 0 0% 98%; /* Blanco */
+  --sidebar-accent: 107 23% 54%; /* Verde oliva */
+  --sidebar-accent-foreground: 0 0% 10%; /* Texto oscuro */
+  --sidebar-border: 25 18% 25%; 
+  --sidebar-ring: 22 85% 53%;
 }
 
 .dark {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
-  --card: 240 100% 25%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
+  --background: 0 0% 7%; /* Fondo muy oscuro (#121212 aprox) */
+  --foreground: 0 0% 98%; /* Texto casi blanco */
+
+  --card: 25 18% 20%; /* Marrón muy oscuro (#3D2D24 aprox) */
+  --card-foreground: 0 0% 98%; /* Texto claro */
+
+  --popover: 25 18% 20%; 
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 100%;
-  --muted-foreground: 0 0% 45%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
+
+  --primary: 22 85% 53%; /* Naranja (#ed6a22) */
+  --primary-foreground: 0 0% 98%; /* Blanco sobre naranja */
+
+  --secondary: 107 23% 54%; /* Verde oliva suave (#7BA66B) */
+  --secondary-foreground: 0 0% 98%; /* Texto claro */
+
+  --muted: 42 96% 78%; /* Amarillo suave (#FDD48A) */
+  --muted-foreground: 0 0% 20%; /* Texto oscuro sobre amarillo */
+
+  --accent: 107 23% 54%; /* Verde oliva (#7BA66B) */
+  --accent-foreground: 0 0% 98%; /* Blanco */
+
+  --destructive: 0 62% 40%; /* Rojo más profundo */
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-  --sidebar-background: 223, 80%, 46%;
-  --sidebar-foreground: 0 72% 46%;
-  --sidebar-primary: 240 100% 25%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 100% 25%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+
+  --border: 0 0% 25%; /* Bordes gris oscuro */
+  --input: 0 0% 15%;  /* Campos oscuros */
+  --ring: 22 85% 53%; /* Anillo naranja */
+
+  /* Colores de gráficos */
+  --chart-1: 22 85% 53%;  /* Naranja */
+  --chart-2: 107 23% 54%; /* Verde oliva */
+  --chart-3: 42 96% 78%;  /* Amarillo suave */
+  --chart-4: 25 18% 25%;  /* Marrón */
+  --chart-5: 0 0% 90%;    /* Gris claro para contraste */
+
+  /* Sidebar */
+  --sidebar-background: 25 18% 20%; /* Marrón oscuro */
+  --sidebar-foreground: 0 0% 98%; /* Texto claro */
+  --sidebar-primary: 22 85% 53%; /* Naranja */
+  --sidebar-primary-foreground: 0 0% 98%; /* Blanco */
+  --sidebar-accent: 107 23% 54%; /* Verde oliva */
+  --sidebar-accent-foreground: 0 0% 98%; /* Blanco */
+  --sidebar-border: 0 0% 25%; /* Gris oscuro */
+  --sidebar-ring: 22 85% 53%; /* Anillo naranja */
 }
 
 * {

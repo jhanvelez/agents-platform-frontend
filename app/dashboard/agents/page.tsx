@@ -64,7 +64,7 @@ export default function LoginPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-950">
                 <Bot className="h-5 w-5" />
-                Agentes Tek Disponibles
+                Agentes ByBinary Disponibles
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

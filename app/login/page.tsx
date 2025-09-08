@@ -9,9 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import Image from "next/image";
 import { Eye, EyeOff, Bot } from "lucide-react"
 import { useDispatch } from 'react-redux'
+
+// Logo
+import Logo from "@/public/logo.png";
 
 import {
   useLogInMutation
@@ -66,12 +69,16 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex justify-center mb-4">
-              <img src="https://tek.com.co/wp-content/uploads/2025/07/logo-tek.png" alt="Tu imagen" className="h-20 w-40" />
+              <Image
+                src={Logo}
+                alt="Logo"
+                className="w-28"
+              />
             </div>
             {/*<Bot className="h-12 w-12 text-primary" />*/}
           </div>
-          <CardTitle className="text-2xl">Agentes IA TEK</CardTitle>
-          <CardDescription>Ingresa tus credenciales para acceder a la plataforma de agentes de TEK</CardDescription>
+          <CardTitle className="text-2xl">Agentes IA ByBinary</CardTitle>
+          <CardDescription>Ingresa tus credenciales para acceder a la plataforma de agentes de ByBinary</CardDescription>
         </CardHeader>
         <CardContent>
 

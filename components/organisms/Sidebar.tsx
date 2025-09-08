@@ -1,5 +1,7 @@
 "use client"
 
+import Image from "next/image";
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -21,6 +23,9 @@ import {
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+
+// Logo
+import Logo from "@/public/logo.png";
 
 const menuItems = [
   { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard" },
@@ -53,13 +58,13 @@ export function Sidebar() {
         {!collapsed && (
           <div className="flex items-center">
             <div className="flex justify-center">
-              <img
-                src="https://tek.com.co/wp-content/uploads/2025/07/logo-tek.png"
-                alt="TEK logo"
-                className="h-12 w-30"
+              <Image
+                src={Logo}
+                alt="ByBinary logo"
+                className="w-24 "
               />
             </div>
-            <span className="ml-2 text-sm font-semibold text-white">Agentes IA TEK</span>
+            <span className="ml-2 text-sm font-semibold text-white">Agentes IA ByBinary</span>
           </div>
         )}
         <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">

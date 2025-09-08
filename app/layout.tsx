@@ -5,7 +5,7 @@ import ReduxProvider from '@/providers/ReduxProvider'
 import { Toaster } from 'react-hot-toast'
 
 export const metadata = {
-  title: "Agentes IA TEK",
+  title: "Agentes IA ByBinary",
   description: "Plataforma de IA",
 };
 
