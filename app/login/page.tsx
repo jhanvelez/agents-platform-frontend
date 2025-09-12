@@ -188,8 +188,6 @@ export default function LoginPage() {
                 // Opcional: decodificar datos básicos
                 const userInfo: any = jwtDecode(token);
 
-                window.location.href = "https://ia.bybinary.co:3001/auth/google"
-
                 storeUser({
                   firstName: userInfo.given_name,
                   lastName: userInfo.family_name,
@@ -202,8 +200,9 @@ export default function LoginPage() {
                   isEmailConfirmed: false,
                   roles: [],
                 });
+
                 // Enviar token al backend
-                // loginWithGoogle(token);
+                loginWithGoogle(token);
               }
             }}
             onError={() => {
