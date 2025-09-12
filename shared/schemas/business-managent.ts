@@ -10,7 +10,7 @@ export const businessManagementInitialValues = {
   department: "",
   city: "",
   plan: "",
-  monthlyTokenLimit: 0,
+  monthlyTokenLimit: "",
 };
 
 export const businnessManagementValidationSchema = Yup.object({

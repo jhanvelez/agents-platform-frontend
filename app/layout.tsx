@@ -3,6 +3,7 @@ import "../styles/output.css";
 
 import ReduxProvider from '@/providers/ReduxProvider'
 import { Toaster } from 'react-hot-toast'
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
   title: "Agentes IA ByBinary",
@@ -18,13 +19,15 @@ const inter = Inter({
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ReduxProvider>
-      <html lang="es">
-        <body className="min-h-screen bg-background">
-          <Toaster position="top-right" />
-          {children}
-        </body>
-      </html>
-    </ReduxProvider>
+    <html lang="es">
+      <body className={`${inter.variable} min-h-screen bg-background`}>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          <ReduxProvider>
+            <Toaster position="top-right" />
+            {children}
+          </ReduxProvider>
+        </GoogleOAuthProvider>
+      </body>
+    </html>
   );
 }

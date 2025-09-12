@@ -19,6 +19,7 @@ import {
   Home,
   ChevronLeft,
   ChevronRight,
+  Brain,
 } from "lucide-react";
 import { useState } from "react"
 import Link from "next/link"
@@ -31,6 +32,7 @@ const menuItems = [
   { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard" },
   { id: "agents", label: "Agentes IA", icon: Bot, path: "/dashboard/agents" },
   { id: "manage-agents", label: "Gestión Agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents" },
+  { id: "models-ia", label: "Modelos IA", icon: Brain, path: "/dashboard/models-ia" },
   { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management" },
   { id: "plans", label: "Planes", icon: SparklesIcon, path: "/dashboard/plans" },
   { id: "conversations", label: "Historial Conversaciones", icon: MessageSquare, path: "/dashboard/conversations" },

@@ -26,6 +26,10 @@ import {
 } from "@/shared/schemas/plans";
 import { toasts } from "@/lib/toasts"
 
+import {
+  ToggleField,
+} from '@/components/ui/Fields'
+
 // API
 import {
   usePlansQuery,
@@ -172,9 +176,20 @@ export default function LandingPage() {
                       <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
                         <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(agent.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      <div className="pt-1">
+                        <ToggleField
+                          label='Eliminar'
+                          checked={agent.isActive}
+                          onChange={(e) => {
+                            console.log(e.target.checked)
+                            if (e.target.checked) {
+                              console.log("Activar")
+                            } else if (!e.target.checked) {
+                              console.log("Inactivar")
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -200,7 +215,7 @@ export default function LandingPage() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingAgent ? "Editar Agente" : "Crear nueva empresa"}</DialogTitle>
+                  <DialogTitle>{editingAgent ? "Editar Plan" : "Crear Plan"}</DialogTitle>
                   <DialogDescription>
                     {editingAgent
                       ? "Edita los detalles del plan"
@@ -277,46 +292,45 @@ export default function LandingPage() {
       {/** 
        * Moidal for deleted
        */}
+      <Dialog open={isDeletedOpen} onOpenChange={setIsDeletedOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <div>
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
+              <TrashIcon />
+            </div>
+            <div className="mt-3 text-center sm:mt-5">
+              <DialogTitle className="text-base font-semibold text-gray-900">
+                ¿Eliminar la empresa?
+              </DialogTitle>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">
+                  Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
+                </p>
+              </div>
+            </div>
+          </div>
 
-            <Dialog open={isDeletedOpen} onOpenChange={setIsDeletedOpen}>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <div>
-                  <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
-                    <TrashIcon />
-                  </div>
-                  <div className="mt-3 text-center sm:mt-5">
-                    <DialogTitle className="text-base font-semibold text-gray-900">
-                      ¿Eliminar la empresa?
-                    </DialogTitle>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                    <button
-                      type="button"
-                      onClick={() => deleteConfirm()}
-                      className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-                    >
-                      Eliminar
-                    </button>
-                    <button
-                      type="button"
-                      data-autofocus
-                      onClick={() => setIsDeletedOpen(false)}
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </DialogFooter>
-                </DialogContent>
-            </Dialog>
+          <DialogFooter>
+            <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => deleteConfirm()}
+                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+              >
+                Eliminar
+              </button>
+              <button
+                type="button"
+                data-autofocus
+                onClick={() => setIsDeletedOpen(false)}
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+              >
+                Cancelar
+              </button>
+            </div>
+          </DialogFooter>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -21,23 +21,18 @@ import {
 //Types
 import { Agent } from "@/types/agent"
 
-const mockChatSessions = [
-  {
-    id: 1,
-    title: "Consulta sobre instalación",
-    agent: "Agente Soporte",
-    date: "2024-01-15 10:30",
-    messages: 12,
-    
-  },
-  {
-    id: 2,
-    title: "Información de precios",
-    agent: "Agente Ventas",
-    date: "2024-01-15 09:15",
-    messages: 8,
-  },
-]
+const mockChatSessions: any = [ ];
+
+/*
+{
+  id: 1,
+  title: "Consulta sobre instalación",
+  agent: "Agente Soporte",
+  date: "2024-01-15 10:30",
+  messages: 12,
+  
+},
+*/
 
 export default function LoginPage() {
   const router = useRouter();
@@ -82,10 +77,9 @@ export default function LoginPage() {
                           <div className="text-slate-950 font-semibold">{agent.name}</div>
                           <div className="text-xs text-slate-700">{agent.description}</div>
                         </div>
-
                         <div className="text-right w-1/3">
-                          <Badge variant={agent.status === "active" ? "default" : "secondary"}>
-                            {agent.status === "active" ? "Activo" : "Inactivo"}
+                          <Badge variant="default" className="text-xs">
+                            {agent.tenant.name}
                           </Badge>
                         </div>
                       </div>
@@ -121,7 +115,7 @@ export default function LoginPage() {
             <CardContent>
               <ScrollArea className="h-[200px]">
                 <div className="space-y-2">
-                  {mockChatSessions.map((session) => (
+                  {mockChatSessions.map((session: any) => (
                     <div key={session.id} className="p-3 border rounded-lg hover:bg-accent cursor-pointer">
                       <div className="font-medium text-sm text-slate-950">{session.title}</div>
                       <div className="text-xs text-slate-700">

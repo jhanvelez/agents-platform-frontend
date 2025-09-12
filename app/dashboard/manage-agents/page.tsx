@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+
+import { Formik } from "formik";
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import SelectSearch from "@/components/ui/SelectSearch"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toasts } from "@/lib/toasts"
 import {
   Dialog,
   DialogContent,
@@ -14,43 +24,41 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Formik } from "formik";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Edit, Trash2, Bot } from "lucide-react"
-import SelectSearch from "@/components/ui/SelectSearch"
-import { toasts } from "@/lib/toasts"
-import { TrashIcon } from "lucide-react"
-
 import {
   FileArchiveIcon,
+  TrashIcon,
+  Plus, Edit, Bot
 } from "lucide-react";
+import {
+  ToggleField,
+} from '@/components/ui/Fields'
 
+
+// API
+import {
+  useAgentsQuery,
+  useStoreAgentMutation,
+  useUpdateAgentMutation,
+  useToggleAgentMutation,
+} from "@/store/manage-agents/manage-agents.api"
+import {
+  useModelsAssetsQuery,
+} from "@/store/models-ia/models-ia.api";
+import {
+  useTenantsQuery
+} from "@/store/business-managent/business-managent.api";
+
+// Schemas
 import {
   agentsInitialValues,
   agentsValidationSchema,
 } from "@/shared/schemas/agents"
 
-// API
-import {
-  useAgentsQuery,
-  useAgentQuery,
-  useStoreAgentMutation,
-  useUpdateAgentMutation,
-  useDeleteAgentMutation,
-  useToggleAgentMutation,
-} from "@/store/manage-agents/manage-agents.api"
-
-import { useTenantsQuery } from "@/store/business-managent/business-managent.api";
-
 //Types
 import { Agent } from "@/types/agent"
 import { Tenant } from "@/types/tenant"
+import { ModelIA } from "@/types/models-ia"
 
-const models = ["GPT-4", "GPT-3.5", "Claude-3", "Llama-2"]
 const availableSkills = [
   "Resolución de problemas",
   "Documentación técnica",
@@ -68,8 +76,21 @@ export default function LandingPage() {
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 
   const { data: agentsData, refetch: refetchAgents } = useAgentsQuery({ search: "" });
+  const { data: modelsIaData } = useModelsAssetsQuery({ search: "" });
+
+  const models = useMemo(() => {
+    if (!modelsIaData) return [];
+
+    return modelsIaData.map((model: ModelIA) => {
+      return {
+        id: model.id,
+        name: `${model.name}`,
+      }
+    })
+  }, [modelsIaData]);
+
+
   const [storeAgent, storeAgentResult] = useStoreAgentMutation();
-  const [deleteAtent, deleteAtentResult] = useDeleteAgentMutation();
 
   const { data: atentsData } = useTenantsQuery({ search: "" })
 
@@ -100,38 +121,30 @@ export default function LandingPage() {
     setIsDialogOpen(true);
   }
 
-  const [currentId, setCurrentId] = useState<string>('');
-  const handleDelete = (id: string) => {
-    setCurrentId(id);
-    setIsDeletedOpen(true);
-  }
 
-  const deleteConfirm = () => {
-    deleteAtent({
-      id: currentId
-    });
-  }
+
+  const [toggleAgent, toggleAgentResult] = useToggleAgentMutation();
 
   useEffect(() => {
-    if (deleteAtentResult.isSuccess) {
+    if (toggleAgentResult.isSuccess) {
       toasts.success(
         "Exito",
-        "La empresa se ha eliminado exitosamente."
+        "Cambio realizado exitosamente."
       );
 
       refetchAgents();
       setIsDeletedOpen(false);
     }
 
-    if (deleteAtentResult.error) {
+    if (toggleAgentResult.error) {
       toasts.error(
         "Error",
-        "La empresa no se ha podido eliminar."
+        "El cambio no se ha realizado."
       );
 
       setIsDeletedOpen(false);
     }
-  }, [deleteAtentResult]);
+  }, [toggleAgentResult]);
 
   return (
     <div className="space-y-6">
@@ -165,9 +178,10 @@ export default function LandingPage() {
                 <TableHead>ID</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
+                <TableHead>Empresa</TableHead>
                 <TableHead>Modelo</TableHead>
                 <TableHead>Habilidades</TableHead>
-                <TableHead>Drive</TableHead>
+                <TableHead>Data para entrenamiento</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -177,6 +191,11 @@ export default function LandingPage() {
                   <TableCell>{index+1}</TableCell>
                   <TableCell className="font-medium">{agent.name}</TableCell>
                   <TableCell className="max-w-[200px] truncate">{agent.description}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">
+                    <Badge variant="destructive" className="text-xs">
+                      {agent.tenant.name}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline">{agent.model}</Badge>
                   </TableCell>
@@ -205,9 +224,18 @@ export default function LandingPage() {
                       <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
                         <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(agent.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      <div className="pt-1">
+                        <ToggleField
+                          label="Estado"
+                          checked={agent.isActive}
+                          onChange={(e) => {
+                            toggleAgent({
+                              id: agent.id
+                            });
+                            //console.log("nuevo estado:", e.target.checked)
+                          }}
+                        />
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -275,9 +303,9 @@ export default function LandingPage() {
                           <SelectValue placeholder="Selecciona un modelo" />
                         </SelectTrigger>
                         <SelectContent>
-                          {models.map((model) => (
-                            <SelectItem key={model} value={model}>
-                              {model}
+                          {models.map((model: ModelIA, index: number) => (
+                            <SelectItem key={`model-${index}`} value={model.id}>
+                              {model.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -324,27 +352,6 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/*
-                  <div className="space-y-2">
-                    <Label>Objetivos</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableObjectives.map((objective) => (
-                        <div key={objective} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`objective-${objective}`}
-                            checked={values..includes(objective)}
-                            onCheckedChange={() => toggleObjective(objective)}
-                            className="rounded"
-                          />
-                          <Label htmlFor={`objective-${objective}`} className="text-sm">
-                            {objective}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  */}
-
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="personality">Personalidad</Label>
@@ -382,7 +389,7 @@ export default function LandingPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="url">URL Chat N8N</Label>
+                      <Label htmlFor="url">URL Webhook</Label>
                       <Input
                         id="url"
                         name="url"
@@ -436,49 +443,6 @@ export default function LandingPage() {
           )
         }}
       </Formik>
-
-      {/** 
-       * Moidal for deleted
-       */}
-      <Dialog open={isDeletedOpen} onOpenChange={setIsDeletedOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <div>
-            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
-              <TrashIcon />
-            </div>
-            <div className="mt-3 text-center sm:mt-5">
-              <DialogTitle className="text-base font-semibold text-gray-900">
-                ¿Eliminar la empresa?
-              </DialogTitle>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">
-                  Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => deleteConfirm()}
-                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-              >
-                Eliminar
-              </button>
-              <button
-                type="button"
-                data-autofocus
-                onClick={() => setIsDeletedOpen(false)}
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-              >
-                Cancelar
-              </button>
-            </div>
-          </DialogFooter>
-          </DialogContent>
-      </Dialog>
     </div>
   );
 }

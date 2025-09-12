@@ -108,7 +108,7 @@ export function ToggleField({
         type="checkbox"
         className={`peer absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none rounded-full opacity-0 ${formClasses}`}
       />
-      <div className="pointer-events-none absolute inset-0 rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-indigo-600" />
+      <div className="pointer-events-none absolute inset-0 rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-primary" />
       <span className="pointer-events-none relative z-20 size-5 rounded-full bg-white shadow ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out peer-checked:translate-x-5" />
     </div>
   )

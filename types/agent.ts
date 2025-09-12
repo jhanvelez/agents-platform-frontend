@@ -1,3 +1,5 @@
+
+import { Tenant } from './tenant'
 export interface Agent {
   id: string;
   name: string
@@ -8,5 +10,6 @@ export interface Agent {
   personality: string
   chatUrl: string
   detailsUrl: string
-  status: "active" | "inactive"
+  tenant: Tenant
+  isActive: boolean
 }

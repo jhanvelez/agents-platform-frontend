@@ -20,8 +20,8 @@ export const usersApi = api
         transformResponse: (response: any) => snakeToCamel(response.data),
       }),
       agent: builder.query({
-        query: () => ({
-          url: `/agents/agent`,
+        query: ({ id } : { id: string }) => ({
+          url: `/agents/${id}`,
           method: RequestMethod.GET,
         }),
         providesTags: ["agents"],
@@ -54,16 +54,15 @@ export const usersApi = api
           method: RequestMethod.DELETE,
         }),
       }),
+
       toggleAgent: builder.mutation({
         invalidatesTags: ["agent"],
-        query: ({ id, state }: any) => ({
-          url: `admin/users/state/${id}`,
-          method: RequestMethod.PUT,
-          body: snakeToCamel({
-            state
-          }),
+        query: ({ id }) => ({
+          url: `/agents/${id}/toggle-status`,
+          method: RequestMethod.PATCH,
         }),
       }),
+
       uploadFileAgent: builder.mutation({
         invalidatesTags: ["agent"],
         query: ({ agentId, file }: { agentId: string; file: File }) => {

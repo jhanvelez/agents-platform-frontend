@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react"
+import { Formik } from "formik";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -17,9 +18,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SelectSearch from "@/components/ui/SelectSearch"
-import { Plus, Edit, Trash2, Bot } from "lucide-react";
+import { Plus, Edit, Bot } from "lucide-react";
+import {
+  ToggleField,
+} from '@/components/ui/Fields'
 
-import { Formik } from "formik";
+
 import {
   businessManagementInitialValues,
   businnessManagementValidationSchema,
@@ -183,9 +187,20 @@ export default function LandingPage() {
                       <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
                         <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(agent.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      <div className="pt-1">
+                        <ToggleField
+                          label='Eliminar'
+                          checked={agent.isActive}
+                          onChange={(e) => {
+                            console.log(e.target.checked)
+                            if (e.target.checked) {
+                              console.log("Activar")
+                            } else if (!e.target.checked) {
+                              console.log("Inactivar")
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -110,6 +110,13 @@ export const authApi = api
           };
         },
       }),
+      googleLogIn: builder.mutation({
+        query: (googleToken: string) => ({
+          url: "auth/google",
+          method: RequestMethod.POST,
+          body: { token: googleToken },
+        }),
+      }),
     }),
   });
 
@@ -125,4 +132,5 @@ export const {
   useChangePasswordMutation,
   useCreateSessionMutation,
   useOtherProfilesQuery,
+  useGoogleLogInMutation,
 } = authApi;
