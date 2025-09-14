@@ -10,6 +10,7 @@
     "build:css": "npx tailwindcss -i ./styles/globals.css -o ./styles/output.css --watch"
   },
   "dependencies": {
+    "@azure/msal-browser": "^4.22.1",
     "@headlessui/react": "^2.2.6",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.9.1",

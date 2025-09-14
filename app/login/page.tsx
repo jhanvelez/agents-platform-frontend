@@ -13,6 +13,7 @@ import Image from "next/image";
 import { Eye, EyeOff, Bot } from "lucide-react"
 import { useDispatch } from 'react-redux'
 
+import { msalInstance } from "@/lib/msalConfig";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
@@ -24,9 +25,6 @@ import {
   useLogInMutation,
   useGoogleLogInMutation,
 } from "@/store/auth/auth.api"
-import {
-  useStoreUserMutation,
-} from "@/store/users/users.api";
 
 // Schema
 import {
@@ -48,7 +46,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const [login, respoonseLogin] = useLogInMutation({});
-  const [storeUser, storeUserResult] = useStoreUserMutation();
 
   const [googleLogin, googleLoginResponse] = useGoogleLogInMutation();
 
@@ -94,6 +91,25 @@ export default function LoginPage() {
       )
     }
   }, [respoonseLogin]);
+
+  async function handleLogin() {
+    try {
+      const loginResponse = await msalInstance.loginPopup({
+        scopes: ["openid", "profile", "email"],
+      });
+
+      const idToken = loginResponse.idToken;
+
+      // 🔥 Enviar el idToken a tu backend NestJS
+      await fetch("/auth/microsoft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: idToken }),
+      });
+    } catch (err) {
+      console.error("Error login Microsoft:", err);
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -172,6 +188,13 @@ export default function LoginPage() {
             }}
           </Formik>
 
+          <div className="w-full flex justify-center mt-2">
+            <a href="password-reset" className="text-sm/6 font-semibold text-sky-600 hover:text-sky-700 dark:text-gray-300 dark:hover:text-white">
+              Olvidé mi contraseña <span aria-hidden="true">?</span>
+            </a>
+          </div>
+
+
           {/* Divider */}
           <div className="flex items-center my-4">
             <div className="flex-grow border-t border-gray-300"></div>
@@ -188,19 +211,6 @@ export default function LoginPage() {
                 // Opcional: decodificar datos básicos
                 const userInfo: any = jwtDecode(token);
 
-                storeUser({
-                  firstName: userInfo.given_name,
-                  lastName: userInfo.family_name,
-                  documentType: "CC",
-                  documentId: "1",
-                  phoneNumber: "",
-                  email: userInfo.email,
-                  password: userInfo.aud,
-                  serviceStartSate: "",
-                  isEmailConfirmed: false,
-                  roles: [],
-                });
-
                 // Enviar token al backend
                 loginWithGoogle(token);
               }
@@ -209,6 +219,13 @@ export default function LoginPage() {
               toasts.error("Error", "No se pudo iniciar sesión con Google");
             }}
           />
+
+          <button
+            onClick={handleLogin}
+            className="w-full bg-sky-600 text-white p-3 rounded-md hover:bg-sky-700 mt-2"
+          >
+            Iniciar sesión con Outlook
+          </button>
 
         </CardContent>
       </Card>
