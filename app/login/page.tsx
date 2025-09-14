@@ -189,7 +189,7 @@ export default function LoginPage() {
           </Formik>
 
           <div className="w-full flex justify-center mt-2">
-            <a href="password-reset" className="text-sm/6 font-semibold text-sky-600 hover:text-sky-700 dark:text-gray-300 dark:hover:text-white">
+            <a href="forgot-password" className="text-sm/6 font-semibold text-sky-600 hover:text-sky-700 dark:text-gray-300 dark:hover:text-white">
               Olvidé mi contraseña <span aria-hidden="true">?</span>
             </a>
           </div>

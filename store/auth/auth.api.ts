@@ -46,9 +46,9 @@ export const authApi = api
           },
         }),
       }),
-      resetPasword: builder.mutation({
+      resetPassword: builder.mutation({
         query: (body: { token: string; password: string }) => ({
-          url: "/api/reset-password",
+          url: "/auth/reset-password",
           method: "POST",
           body: {
             token: body.token,
@@ -126,7 +126,7 @@ export const {
   useProfilesQuery,
   useLazyProfilesQuery,
   useForgotPasswordMutation,
-  useResetPaswordMutation,
+  useResetPasswordMutation,
   useGetUserByIdQuery,
   useSessionQuery,
   useChangePasswordMutation,

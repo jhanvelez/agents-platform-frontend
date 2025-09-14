@@ -24,51 +24,39 @@ import Logo from "@/public/logo.png";
 
 // API
 import {
-  useLogInMutation,
+  useForgotPasswordMutation,
 } from "@/store/auth/auth.api"
 
 // Schema
 import {
-  authInitialValues,
-  authValidationSchema,
+  forgotPasswordInitialValues,
+  forgotPasswordValidationSchema,
 } from "@/shared/schemas/auth.schema"
 
 import { toasts } from '@/lib/toasts'
 
-import {
-  setUser,
-  setAccessToken,
-} from '@/store/auth/auth.slice'
-
 export default function LoginPage() {
   const router = useRouter();
-  const dispatch = useDispatch()
 
-
-  const [login, respoonseLogin] = useLogInMutation({});
+  const [forgotPassword, forgotPasswordResponse] = useForgotPasswordMutation({});
 
   useEffect(() => {
-    if (respoonseLogin.isSuccess) {
+    if (forgotPasswordResponse.isSuccess) {
       toasts.success(
         "Exito",
-        "Bienvenido a la aplicacion"
-      )
+        "Se ha enviado el correo de recuperación"
+      );
 
-      localStorage.setItem("accessToken", respoonseLogin.data.access_token)
-
-      dispatch(setUser({ user: respoonseLogin.data.user }));
-      dispatch(setAccessToken({ accessToken: respoonseLogin.data.access_token }));
-
-      router.push('/dashboard')
+      // router.back();
     }
 
-    if (respoonseLogin.isError) {
+    if (forgotPasswordResponse.isError) {
       toasts.error(
         "error",
-        "Usuario o contraseña incorrectos"
+        "Ha ocurrido un error, intenta de nuevo"
       )
     }
-  }, [respoonseLogin]);
+  }, [forgotPasswordResponse]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -90,10 +78,10 @@ export default function LoginPage() {
         <CardContent>
           <Formik
             enableReinitialize
-            initialValues={authInitialValues}
-            validationSchema={authValidationSchema}
+            initialValues={forgotPasswordInitialValues}
+            validationSchema={forgotPasswordValidationSchema}
             onSubmit={(values, formikHelopers) => {
-              login(values);
+              forgotPassword(values);
               formikHelopers.resetForm();
             }}
           >
@@ -116,7 +104,7 @@ export default function LoginPage() {
                   <Button type="submit" onClick={() => {
                     handleSubmit();
                   }} className="w-full" disabled={!errors || isSubmitting}>
-                    {isSubmitting ? "Iniciando sesión..." : "Enviar email de recuperación"}
+                    {isSubmitting ? "Enviandoo email..." : "Enviar email de recuperación"}
                   </Button>
                 </form>
               );
