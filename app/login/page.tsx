@@ -85,10 +85,13 @@ export default function LoginPage() {
     }
 
     if (respoonseLogin.isError) {
-      toasts.error(
-        "error",
-        "Usuario o contraseña incorrectos"
-      )
+      if ((respoonseLogin.error as any)?.data?.message) {
+        toasts.error(
+          "error",
+          (respoonseLogin.error as any)?.data?.message
+        )
+        return;
+      }
     }
   }, [respoonseLogin]);
 
@@ -100,7 +103,6 @@ export default function LoginPage() {
 
       const idToken = loginResponse.idToken;
 
-      // 🔥 Enviar el idToken a tu backend NestJS
       await fetch("/auth/microsoft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,11 +144,14 @@ export default function LoginPage() {
               return (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="username">Usuario</Label>
                     <Input
                       id="username"
                       type="text"
                       name="email"
+                      label="Usuario"
+                      span="Obligatorio"
+                      error={!!errors.email}
+                      textError={errors.email}
                       placeholder="Ingresa tu usuario"
                       value={values.email}
                       onChange={handleChange}
@@ -154,11 +159,14 @@ export default function LoginPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Contraseña</Label>
                     <div className="relative">
                       <Input
                         id="password"
                         name="password"
+                        label="Contraseña"
+                        span="Obligatorio"
+                        error={!!errors.password}
+                        textError={errors.password}
                         type={showPassword ? "text" : "password"}
                         placeholder="Ingresa tu contraseña"
                         value={values.password}

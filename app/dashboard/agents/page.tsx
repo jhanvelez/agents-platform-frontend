@@ -69,7 +69,7 @@ export default function LoginPage() {
                     <button
                       className="w-full justify-start h-auto p-3 z-10 hover:bg-accent relative inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 dark:bg-white/10 dark:text-white dark:ring-gray-700 dark:hover:bg-white/20"
                       onClick={() => {
-                        router.push(`/dashboard/agents/chat/${agent.id}`);
+                        router.push(`/dashboard/agents/chat/agent/${agent.id}/new`);
                       }}
                     >
                       <div className="flex items-center justify-between w-full">

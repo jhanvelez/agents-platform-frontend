@@ -66,14 +66,12 @@ const availableSkills = [
   "Negociación",
   "Análisis de datos",
   "Atención al cliente",
-]
-const personalities = ["Profesional y empático", "Persuasivo y amigable", "Analítico y preciso", "Creativo y dinámico"]
+];
+const personalities = ["Profesional y empático", "Persuasivo y amigable", "Analítico y preciso", "Creativo y dinámico"];
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isDeletedOpen, setIsDeletedOpen] = useState(false)
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: agentsData, refetch: refetchAgents } = useAgentsQuery({ search: "" });
   const { data: modelsIaData } = useModelsAssetsQuery({ search: "" });
@@ -115,12 +113,37 @@ export default function LandingPage() {
     }
   }, [storeAgentResult])
 
-  const [currentTenant, setCurrentTenant] = useState<Agent>();
+  const [currentAgent, setCurrentAgent] = useState<Agent>();
   const handleEdit = (agent: Agent) => {
-    setCurrentTenant(agent);
+    setCurrentAgent({
+      ...agent,
+      abilities: String(agent.abilities).split(',').slice(0, 2),
+    });
     setIsDialogOpen(true);
   }
 
+  const [updateAgent, updateAgentResult] = useUpdateAgentMutation();
+  
+  useEffect(() => {
+    if (updateAgentResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "El agente se ha actualizado exitosamente."
+      );
+
+      refetchAgents();
+      setIsDialogOpen(false);
+    }
+
+    if (updateAgentResult.error) {
+      toasts.error(
+        "Error",
+        "El agente no se ha actualizado."
+      );
+
+      setIsDialogOpen(false);
+    }
+  }, [updateAgentResult])
 
 
   const [toggleAgent, toggleAgentResult] = useToggleAgentMutation();
@@ -133,7 +156,6 @@ export default function LandingPage() {
       );
 
       refetchAgents();
-      setIsDeletedOpen(false);
     }
 
     if (toggleAgentResult.error) {
@@ -141,8 +163,6 @@ export default function LandingPage() {
         "Error",
         "El cambio no se ha realizado."
       );
-
-      setIsDeletedOpen(false);
     }
   }, [toggleAgentResult]);
 
@@ -197,11 +217,11 @@ export default function LandingPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{agent.model}</Badge>
+                    <Badge variant="outline">{agent.model.name}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {agent.abilities.split(',').slice(0, 2).map((skill, index) => (
+                      {String(agent.abilities).split(',').slice(0, 2).map((skill, index) => (
                         <Badge key={index} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
@@ -248,15 +268,23 @@ export default function LandingPage() {
       {/* Modal Crear/Editar */}
       <Formik
         enableReinitialize
-        initialValues={agentsInitialValues}
+        initialValues={currentAgent ?? agentsInitialValues}
         validationSchema={agentsValidationSchema}
         onSubmit={(values, formikHelopers) => {
-          storeAgent({
-            ...values,
-            abilities: values.abilities.toString()
-          });
-          // formikHelopers.resetForm();
-          // setIsDialogOpen(false);
+          if (currentAgent) {
+            updateAgent({
+              ...values,
+              abilities: values.abilities.toString()
+            });
+          }else {
+            storeAgent({
+              ...values,
+              abilities: values.abilities.toString()
+            });
+          }
+
+          formikHelopers.resetForm();
+          setIsDialogOpen(false);
         }}
       >
         {({ handleSubmit, errors, handleChange, setFieldValue, values, resetForm }) => {
@@ -273,9 +301,9 @@ export default function LandingPage() {
             >
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingAgent ? "Editar Agente" : "Crear Nuevo Agente"}</DialogTitle>
+                  <DialogTitle>{currentAgent ? "Editar Agente" : "Crear Nuevo Agente"}</DialogTitle>
                   <DialogDescription>
-                    {editingAgent
+                    {currentAgent
                       ? "Modifica la configuración del agente seleccionado"
                       : "Configura las propiedades del nuevo agente IA"}
                   </DialogDescription>
@@ -296,8 +324,8 @@ export default function LandingPage() {
                     <div className="space-y-2">
                       <Label htmlFor="model">Modelo *</Label>
                       <Select
-                        value={values.model}
-                        onValueChange={(value) => setFieldValue("model", value)}
+                        value={values.modelId}
+                        onValueChange={(value) => setFieldValue("modelId", value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona un modelo" />
@@ -435,7 +463,7 @@ export default function LandingPage() {
                     console.log(errors)
                     handleSubmit();
                   }} disabled={!errors}>
-                    {editingAgent ? "Actualizar" : "Crear"}
+                    {currentAgent ? "Actualizar" : "Crear"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

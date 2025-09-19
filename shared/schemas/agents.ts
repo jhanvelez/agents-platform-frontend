@@ -4,7 +4,7 @@ import { FIELD_REQUIRED_MESSAGE } from "@/shared/utils/validations";
 
 export const agentsInitialValues = {
   name: "",
-  model: "",
+  modelId: "",
   url: "",
   tenantId: "",
   monthlyTokenLimit: 0,
@@ -15,7 +15,7 @@ export const agentsInitialValues = {
 
 export const agentsValidationSchema = Yup.object({
   name: Yup.string().required(FIELD_REQUIRED_MESSAGE),
-  model: Yup.string().required(FIELD_REQUIRED_MESSAGE),
+  modelId: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   url: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   tenantId: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   monthlyTokenLimit: Yup.number().required(FIELD_REQUIRED_MESSAGE),
@@ -23,36 +23,3 @@ export const agentsValidationSchema = Yup.object({
   abilities: Yup.array().required(FIELD_REQUIRED_MESSAGE),
   personality: Yup.string().required(FIELD_REQUIRED_MESSAGE),
 });
-
-/*
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  model: string;
-
-  @IsNotEmpty()
-  @IsUrl()
-  url: string;
-
-  @IsUUID()
-  tenantId: string;
-
-  @IsInt()
-  @Min(0)
-  monthlyTokenLimit: number;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsString()
-  abilities?: string;
-
-  @IsOptional()
-  @IsString()
-  personality?: string;
-*/

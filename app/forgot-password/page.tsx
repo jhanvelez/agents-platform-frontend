@@ -47,7 +47,7 @@ export default function LoginPage() {
         "Se ha enviado el correo de recuperación"
       );
 
-      // router.back();
+      router.back();
     }
 
     if (forgotPasswordResponse.isError) {

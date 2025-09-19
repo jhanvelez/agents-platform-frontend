@@ -1,9 +1,9 @@
 import { Profile, type Credentials } from "@/store/auth/auth";
-import { api } from "@/store/app.api";
+import { apiLogin } from "@/store/apiLogin.api";
 import { RequestMethod } from "@/shared/utils/RequestMethod";
 import { camelToSnake, snakeToCamel } from "caseparser";
 
-export const authApi = api
+export const authApi = apiLogin
   .enhanceEndpoints({ addTagTypes: ["user", "auth.user", "profiles"] })
   .injectEndpoints({
     overrideExisting: false,

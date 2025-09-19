@@ -1,13 +1,17 @@
 import "../styles/globals.css";
 import "../styles/output.css";
 
-import ReduxProvider from '@/providers/ReduxProvider'
-import { Toaster } from 'react-hot-toast'
+import type { Metadata } from "next";
+import { Toaster } from 'react-hot-toast';
+import ReduxProvider from '@/providers/ReduxProvider';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Agentes IA ByBinary",
   description: "Plataforma de IA",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 import { Inter } from 'next/font/google';

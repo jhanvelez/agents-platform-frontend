@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -8,83 +8,59 @@ import { Textarea } from "@/components/ui/textarea"
 import { Bot, Send, AlertTriangle } from "lucide-react";
 
 interface ChatClientProps {
-  chatId: string;
-}
-
-const mockAgents = [
-  {
-    id: 1,
-    name: "Agente Soporte",
-    description: "Asistente para consultas de soporte técnico",
-    status: "active",
-    chatUrl: "https://n8n.example.com/webhook/chat/support",
-    lastActive: "2024-01-15 10:30",
-  },
-  {
-    id: 2,
-    name: "Agente Ventas",
-    description: "Especialista en consultas comerciales",
-    status: "active",
-    chatUrl: "",
-    lastActive: "2024-01-15 09:15",
-  },
-  {
-    id: 3,
-    name: "Agente FAQ",
-    description: "Responde preguntas frecuentes",
-    status: "inactive",
-    chatUrl: "https://n8n.example.com/webhook/chat/faq",
-    lastActive: "2024-01-14 16:45",
-  },
-];
+  sessionId: string;
+};
 
 // API
 import {
-  useAgentQuery,
-} from "@/store/manage-agents/manage-agents.api"
+  useMessagesSessionQuery,
+  useMessageChatSessionMutation,
+} from "@/store/chat/chat.api"
 
 // Type
-import {
-  Agent
-} from '@/types/agent'
+import { Agent } from '@/types/agent'
+import { Message } from "@/types/message";
 
-export default function ChatClient({ chatId }: ChatClientProps) {
+export default function ChatClient({ sessionId }: ChatClientProps) {
   const [selectedAgent, setSelectedAgent] = useState<Agent>();
   const [chatMessage, setChatMessage] = useState("");
-  const [chatMessages, setChatMessages] = useState<
-    Array<{ id: number; text: string; sender: "user" | "agent"; time: string }>
-  >([]);
 
-  const { data: agentData } = useAgentQuery({ id: chatId });
+  const { data: sessionData, refetch: refetchMessages } = useMessagesSessionQuery({ sessionId });
+
+  const [messageChatSession, messageChatSessionResult] = useMessageChatSessionMutation();
 
   useEffect(() => {
-    if (agentData) {
-      setSelectedAgent(agentData)
+    if (messageChatSessionResult.isSuccess) {
+      refetchMessages();
     }
-  }, [agentData])
+  }, [messageChatSessionResult]);
+
+  useEffect(() => {
+    if (sessionData) {
+      setSelectedAgent(sessionData.agent);
+    }
+  }, [sessionData]);
+
+  const chatMessages = useMemo(() => {
+    if (!sessionData) return [];
+
+    return sessionData.messages.map((model: Message) => {
+      return {
+        id: model.id,
+        text: model.content,
+        sender: model.role,
+        time: model.createdAt,
+      }
+    })
+  }, [sessionData]);
 
   const handleSendMessage = () => {
     if (!chatMessage.trim() || !selectedAgent) return;
-
-    const newMessage = {
-      id: Date.now(),
-      text: chatMessage,
-      sender: "user" as const,
-      time: new Date().toLocaleTimeString(),
-    };
-
-    setChatMessages((prev) => [...prev, newMessage]);
+    messageChatSession({
+      sessionId,
+      message: chatMessage,
+    })
     setChatMessage("");
-
-    setTimeout(() => {
-      const agentResponse = {
-        id: Date.now() + 1,
-        text: `Respuesta de ${selectedAgent.name}: "${chatMessage}" recibida. Elaborando respuesta contextual.`,
-        sender: "agent" as const,
-        time: new Date().toLocaleTimeString(),
-      };
-      setChatMessages((prev) => [...prev, agentResponse]);
-    }, 1000);
   };
 
   return (
@@ -102,8 +78,8 @@ export default function ChatClient({ chatId }: ChatClientProps) {
       </div>
 
       {/* Chat Body */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+      <div className="flex-1 overflow-hidden pb-32">
+        <ScrollArea className="h-full">
           <div className="space-y-4 pb-24">
             {chatMessages.length === 0 ? (
               <div className="text-center text-slate-700 py-8">
@@ -113,7 +89,7 @@ export default function ChatClient({ chatId }: ChatClientProps) {
                 )}
               </div>
             ) : (
-              chatMessages.map((message) => (
+              chatMessages.map((message: any) => (
                 <div
                   key={message.id}
                   className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
@@ -154,7 +130,7 @@ export default function ChatClient({ chatId }: ChatClientProps) {
               }}
             />
           </div>
-          {!selectedAgent?.chatUrl && (
+          {!selectedAgent?.url && (
             <Alert className="mt-2">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>Chat deshabilitado: LLM no configurado</AlertDescription>
