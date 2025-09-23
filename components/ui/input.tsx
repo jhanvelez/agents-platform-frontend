@@ -2,8 +2,6 @@ import * as React from "react"
 import { useId } from 'react'
 import { ExclamationCircleIcon } from '@heroicons/react/16/solid'
 
-import { cn } from "@/lib/utils"
-
 interface InputProps extends React.ComponentProps<"input"> {
   label?: string
   span?: string

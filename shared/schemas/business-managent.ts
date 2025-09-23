@@ -10,7 +10,6 @@ export const businessManagementInitialValues = {
   department: "",
   city: "",
   plan: "",
-  monthlyTokenLimit: "",
 };
 
 export const businnessManagementValidationSchema = Yup.object({
@@ -22,8 +21,4 @@ export const businnessManagementValidationSchema = Yup.object({
   department: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   city: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   plan: Yup.string().required(FIELD_REQUIRED_MESSAGE),
-  monthlyTokenLimit: Yup.number()
-    .integer("El límite mensual debe ser un número entero")
-    .min(0, "El límite mensual no puede ser negativo")
-    .required(FIELD_REQUIRED_MESSAGE),
 });

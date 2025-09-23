@@ -49,17 +49,24 @@ export default function ChangePassword({ token }: ChangePasswordProps) {
     if (resetPasswordResponse.isSuccess) {
       toasts.success(
         "Exito",
-        "Se ha enviado el correo de recuperación"
+        "Contraseña cambiada con exito, ya puedes iniciar sesion"
       );
-
-      // router.back();
+      router.push('/login');
     }
 
     if (resetPasswordResponse.isError) {
-      toasts.error(
-        "error",
-        "Ha ocurrido un error, intenta de nuevo"
-      )
+
+      console.log((resetPasswordResponse.error as any)?.data?.message);
+
+      router.push('/login');
+      if ((resetPasswordResponse.error as any)?.data?.message) {
+        toasts.error(
+          "error",
+          (resetPasswordResponse.error as any)?.data?.message
+        );
+        router.push('/login');
+        return;
+      }
     }
   }, [resetPasswordResponse]);
 
@@ -77,8 +84,12 @@ export default function ChangePassword({ token }: ChangePasswordProps) {
             </div>
             {/*<Bot className="h-12 w-12 text-primary" />*/}
           </div>
-          <CardTitle className="text-2xl">Agentes IA ByBinary</CardTitle>
-          <CardDescription>Ingresa tu correo electrónico par recuperar su contraseña.</CardDescription>
+          <CardTitle className="text-2xl">
+            Cambiar contraseña
+          </CardTitle>
+          <CardDescription>
+            Ingresa tu nueva contraseña a continuación
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Formik
@@ -106,6 +117,8 @@ export default function ChangePassword({ token }: ChangePasswordProps) {
                       value={values.password}
                       onChange={handleChange}
                       disabled={isSubmitting}
+                      error={!!errors.password}
+                      textError={errors.password}
                     />
                   </div>
 
@@ -119,12 +132,14 @@ export default function ChangePassword({ token }: ChangePasswordProps) {
                       value={values.confirmPassword}
                       onChange={handleChange}
                       disabled={isSubmitting}
+                      error={!!errors.confirmPassword}
+                      textError={errors.confirmPassword}
                     />
                   </div>
 
                   <Button type="submit" onClick={() => {
                     handleSubmit();
-                  }} className="w-full" disabled={!errors || isSubmitting}>
+                  }} className="w-full" disabled={!errors || resetPasswordResponse.isLoading}>
                     {isSubmitting ? "Cambiando contrasenña..." : "Cambiar contraseña"}
                   </Button>
                 </form>

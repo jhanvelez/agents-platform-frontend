@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react"
+import { use, useEffect, useMemo, useState } from "react"
 import { Formik } from "formik";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SelectSearch from "@/components/ui/SelectSearch"
+import { Pagination } from "@/components/ui/PaginationUI"
 import { Plus, Edit, Bot } from "lucide-react";
 import {
   ToggleField,
@@ -34,10 +35,8 @@ import { TrashIcon } from "lucide-react";
 // API
 import {
   useTenantsQuery,
-  useTenantQuery,
   useStoreTenantsMutation,
   useUpdateTenantsMutation,
-  useDeleteAtentMutation,
   useToggleTenantMutation,
 } from "@/store/business-managent/business-managent.api";
 import { useLocationsQuery } from "@/store/locations/locations.api";
@@ -52,21 +51,33 @@ import { Agent } from "@/types/agent"
 const documentTypes = ["CC", "CE", "TI", "NIT"]
 
 export default function LandingPage() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isDeletedOpen, setIsDeletedOpen] = useState(false)
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [municipalities, setMunicipalities] = useState<City[]>([]);
 
   // API hooks
   const { data: atentsData, refetch: refetchAtents } = useTenantsQuery({ search: "" })
-  const [storeAtent, storeAtentResult] = useStoreTenantsMutation();
-  const [deleteAtent, deleteAtentResult] = useDeleteAtentMutation();
+  const [storeTenant, storeTenantResult] = useStoreTenantsMutation();
+  const [toggleTenant, toggleTenantResult] = useToggleTenantMutation();
 
   const { data: locationsData } = useLocationsQuery({ search: "" });
   const { data: plansData } = usePlansQuery({ search: "" });
 
+
+  const departments = useMemo(() => {
+    if (!locationsData) return [];
+
+    return locationsData.map((dep: Deparment) => {
+      return {
+        value: dep.id,
+        label: dep.name,
+      }
+    })
+  }, [locationsData]);
+
   useEffect(() => {
-    if (storeAtentResult.isSuccess) {
+    if (storeTenantResult.isSuccess) {
       toasts.success(
         "Exito",
         "La empresa se ha registrado exitosamente."
@@ -76,7 +87,7 @@ export default function LandingPage() {
       setIsDialogOpen(false);
     }
 
-    if (storeAtentResult.error) {
+    if (storeTenantResult.error) {
       toasts.error(
         "Error",
         "La empresa no se ha registrado exitosamente."
@@ -84,7 +95,7 @@ export default function LandingPage() {
 
       setIsDialogOpen(false);
     }
-  }, [storeAtentResult]);
+  }, [storeTenantResult]);
 
   const [currentTenant, setCurrentTenant] = useState<Tenant>();
   const handleEdit = (agent: Tenant) => {
@@ -92,38 +103,24 @@ export default function LandingPage() {
     setIsDialogOpen(true);
   }
 
-  const [currentId, setCurrentId] = useState<string>('');
-  const handleDelete = (id: string) => {
-    setCurrentId(id);
-    setIsDeletedOpen(true);
-  }
-
-  const deleteConfirm = () => {
-    deleteAtent({
-      id: currentId
-    });
-  }
 
   useEffect(() => {
-    if (deleteAtentResult.isSuccess) {
+    if (toggleTenantResult.isSuccess) {
       toasts.success(
         "Exito",
         "La empresa se ha eliminado exitosamente."
       );
 
       refetchAtents();
-      setIsDeletedOpen(false);
     }
 
-    if (deleteAtentResult.error) {
+    if (toggleTenantResult.error) {
       toasts.error(
         "Error",
         "La empresa no se ha podido eliminar."
       );
-
-      setIsDeletedOpen(false);
     }
-  }, [deleteAtentResult]);
+  }, [toggleTenantResult]);
 
   return (
     <div className="space-y-6">
@@ -189,15 +186,12 @@ export default function LandingPage() {
                       </Button>
                       <div className="pt-1">
                         <ToggleField
-                          label='Eliminar'
+                          label="Estado"
                           checked={agent.isActive}
                           onChange={(e) => {
-                            console.log(e.target.checked)
-                            if (e.target.checked) {
-                              console.log("Activar")
-                            } else if (!e.target.checked) {
-                              console.log("Inactivar")
-                            }
+                            toggleTenant({
+                              id: agent.id
+                            });
                           }}
                         />
                       </div>
@@ -207,6 +201,15 @@ export default function LandingPage() {
               ))}
             </TableBody>
           </Table>
+
+          <Pagination
+            totalItems={atentsData ? atentsData.length : 0}
+            itemsPerPage={10}
+            currentPage={1}
+            onPageChange={(newPage) => {
+              setCurrentPage(newPage);
+            }}
+          />
         </CardContent>
       </Card>
 
@@ -216,7 +219,7 @@ export default function LandingPage() {
         initialValues={currentTenant ?? businessManagementInitialValues}
         validationSchema={businnessManagementValidationSchema}
         onSubmit={(values, formikHelopers) => {
-          storeAtent(values);
+          storeTenant(values);
           formikHelopers.resetForm();
           setIsDialogOpen(false);
         }}
@@ -252,46 +255,51 @@ export default function LandingPage() {
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nombre *</Label>
                       <Input
                         id="name"
                         name="name"
+                        label="Nombre *"
                         value={values.name}
                         onChange={handleChange}
                         placeholder="Nombre de la empresa"
+                        error={!!errors.name}
+                        textError={errors.name}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Correo electrónico *</Label>
                       <Input
                         id="email"
                         name="email"
+                        label="Correo electrónico *"
                         value={values.email}
                         onChange={handleChange}
                         placeholder="Correo electrónico de la empresa"
+                        error={!!errors.email}
+                        textError={errors.email}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="address">Dirección *</Label>
                       <Input
                         id="address"
                         name="address"
+                        label="Dirección *"
                         value={values.address}
                         onChange={handleChange}
                         placeholder="Correo electrónico de la empresa"
+                        error={!!errors.address}
+                        textError={errors.address}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="documentType">Tipo de documento</Label>
                       <Select
-                        value={values.documentType}
                         name="documentType"
+                        value={values.documentType}
                         onValueChange={(value) => setFieldValue("documentType", value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger label="Tipo de documento" error={!!errors.documentType} textError={errors.documentType}>
                           <SelectValue placeholder="Selecciona un tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -304,13 +312,15 @@ export default function LandingPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="documentNumber">Número de documento</Label>
                       <Input
                         id="documentNumber"
-                        value={values.documentNumber}
                         name="documentNumber"
+                        label="Número de documento"
+                        value={values.documentNumber}
                         onChange={handleChange}
                         placeholder="9876543210"
+                        error={!!errors.documentNumber}
+                        textError={errors.documentNumber}
                       />
                     </div>
                   </div>
@@ -319,14 +329,11 @@ export default function LandingPage() {
                     <div className="space-y-2">
                       <Label htmlFor="deparment">Departamento</Label>
                       <SelectSearch
-                        colourOptions={locationsData && locationsData.map((dep: Deparment) => {
-                          return {
-                            value: dep.id,
-                            label: dep.name,
-                          }
-                        })}
                         name="department"
+                        colourOptions={departments}
                         onChange={(value: any) => setFieldValue("department", value.value)}
+                        error={!!errors.department}
+                        textError={errors.department}
                       />
                     </div>
                     <div className="space-y-2">
@@ -340,19 +347,19 @@ export default function LandingPage() {
                         })}
                         name="city"
                         onChange={(value: any) => setFieldValue("city", value.value)}
+                        error={!!errors.city}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="deparment">Plan</Label>
                       <Select
                         value={values.plan}
                         name="plan"
                         onValueChange={(value) => setFieldValue("plan", value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger label="Plan" error={!!errors.plan} textError={errors.plan}>
                           <SelectValue placeholder="Selecciona un plan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -363,18 +370,6 @@ export default function LandingPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="monthlyTokenLimit">
-                        Límite mensual de tokens
-                      </Label>
-                      <Input
-                        id="monthlyTokenLimit"
-                        value={values.monthlyTokenLimit}
-                        name="monthlyTokenLimit"
-                        onChange={handleChange}
-                        placeholder="Límite mensual de tokens"
-                      />
                     </div>
                   </div>
                 </div>
@@ -395,49 +390,6 @@ export default function LandingPage() {
           );
         }}
       </Formik>
-
-      {/** 
-       * Moidal for deleted
-       */}
-      <Dialog open={isDeletedOpen} onOpenChange={setIsDeletedOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <div>
-            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
-              <TrashIcon />
-            </div>
-            <div className="mt-3 text-center sm:mt-5">
-              <DialogTitle className="text-base font-semibold text-gray-900">
-                ¿Eliminar la empresa?
-              </DialogTitle>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">
-                  Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => deleteConfirm()}
-                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-              >
-                Eliminar
-              </button>
-              <button
-                type="button"
-                data-autofocus
-                onClick={() => setIsDeletedOpen(false)}
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-              >
-                Cancelar
-              </button>
-            </div>
-          </DialogFooter>
-          </DialogContent>
-      </Dialog>
     </div>
   );
 }

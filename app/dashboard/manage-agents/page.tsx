@@ -103,11 +103,14 @@ export default function LandingPage() {
       setIsDialogOpen(false);
     }
 
-    if (storeAgentResult.error) {
-      toasts.error(
-        "Error",
-        "El agente no se ha registrado."
-      );
+    if (storeAgentResult.isError) {
+      if ((storeAgentResult.error as any)?.data?.message) {
+        toasts.error(
+          "error",
+          (storeAgentResult.error as any)?.data?.message
+        )
+        return;
+      }
 
       setIsDialogOpen(false);
     }

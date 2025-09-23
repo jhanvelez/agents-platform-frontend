@@ -48,18 +48,11 @@ export const usersApi = api
           }),
         }),
       }),
-      deleteAtent: builder.mutation({
-        invalidatesTags: ["atent"],
-        query: ({ id }) => ({
-          url: `/tenants/${id}/toggle-status`,
-          method: RequestMethod.PATCH,
-        }),
-      }),
       ToggleTenant: builder.mutation({
         invalidatesTags: ["atent"],
         query: ({ id, state }: any) => ({
-          url: `admin/users/state/${id}`,
-          method: RequestMethod.PUT,
+          url: `/tenants/${id}/toggle-status`,
+          method: RequestMethod.PATCH,
           body: snakeToCamel({
             state
           }),
@@ -73,6 +66,5 @@ export const {
   useTenantQuery,
   useStoreTenantsMutation,
   useUpdateTenantsMutation,
-  useDeleteAtentMutation,
   useToggleTenantMutation,
 } = usersApi;

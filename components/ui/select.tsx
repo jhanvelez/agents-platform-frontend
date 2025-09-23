@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { ExclamationCircleIcon } from '@heroicons/react/16/solid'
 
 import { cn } from "@/lib/utils"
 
@@ -11,26 +12,67 @@ const Select = SelectPrimitive.Root
 const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
-
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+    error?: boolean
+    textError?: string
+    label?: string
+    span?: string
+  }
+>(({ className, children, error, textError, label, span, ...props }, ref) => {
+  const id = React.useId()
+
+  return (
+    <div className="w-full">
+      <div className="flex justify-between mb-1">
+        {label && (
+          <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+            {label}
+          </label>
+        )}
+        {span && (
+          <span className="text-sm/6 text-gray-500">
+            {span}
+          </span>
+        )}
+      </div>
+
+      <div className="relative">
+        <SelectPrimitive.Trigger
+          ref={ref}
+          id={id}
+          className={cn(
+            "flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+            error
+              ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+              : "border-input",
+            className
+          )}
+          {...props}
+        >
+          {children}
+          <SelectPrimitive.Icon asChild>
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </SelectPrimitive.Icon>
+        </SelectPrimitive.Trigger>
+
+        {error && (
+          <ExclamationCircleIcon
+            aria-hidden="true"
+            className="pointer-events-none absolute right-2 top-2 h-5 w-5 text-red-500"
+          />
+        )}
+      </div>
+
+      {error && textError && (
+        <p className="mt-1 text-sm text-red-600">{textError}</p>
+      )}
+    </div>
+  )
+})
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
+
 
 const SelectScrollUpButton = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,

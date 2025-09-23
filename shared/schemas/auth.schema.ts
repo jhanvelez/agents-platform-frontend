@@ -29,7 +29,7 @@ export const resetPasswordInitialValues = {
 export const resetPasswordValidationSchema = Yup.object({
   password: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Passwords must match")
+    .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir")
     .required(FIELD_REQUIRED_MESSAGE),
 });
 
@@ -43,6 +43,6 @@ export const changePasswordValidationSchema = Yup.object({
   currentPassword: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   newPassword: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   confirmNewPassword: Yup.string()
-    .oneOf([Yup.ref("newPassword")], "Passwords must match")
+    .oneOf([Yup.ref("newPassword")], "Las contraseñas deben coincidir")
     .required(FIELD_REQUIRED_MESSAGE),
 });
