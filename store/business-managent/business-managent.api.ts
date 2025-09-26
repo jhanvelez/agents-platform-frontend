@@ -30,22 +30,18 @@ export const usersApi = api
       }),
       storeTenants: builder.mutation({
         invalidatesTags: ["atent"],
-        query: (gymData) => ({
+        query: (tenantData) => ({
           url: "tenants",
           method: RequestMethod.POST,
-          body: gymData,
+          body: tenantData,
         }),
       }),
       updateTenants: builder.mutation({
         invalidatesTags: ["atent"],
-        query: ({ id, active, name, email }: any) => ({
+        query: ({ id, tenantData }: any) => ({
           url: `/tenants/${id}`,
           method: RequestMethod.PUT,
-          body: snakeToCamel({
-            active,
-            name,
-            email,
-          }),
+          body: tenantData,
         }),
       }),
       ToggleTenant: builder.mutation({

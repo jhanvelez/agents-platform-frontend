@@ -37,14 +37,10 @@ export const usersApi = api
       }),
       updateAgent: builder.mutation({
         invalidatesTags: ["agent"],
-        query: ({ id, active, name, email }: any) => ({
+        query: ({ id, agentData }: any) => ({
           url: `/agents/${id}`,
           method: RequestMethod.PUT,
-          body: snakeToCamel({
-            active,
-            name,
-            email,
-          }),
+          body: agentData
         }),
       }),
       deleteAgent: builder.mutation({

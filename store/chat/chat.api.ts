@@ -16,14 +16,6 @@ export const chatSessionApi = api
         providesTags: ["chat-sessions"],
         transformResponse: (response: any) => snakeToCamel(response.data),
       }),
-      chatSession: builder.query({
-        query: ({ id } : { id: string }) => ({
-          url: `/agents/${id}`,
-          method: RequestMethod.GET,
-        }),
-        providesTags: ["chat-sessions"],
-        transformResponse: (response: any) => snakeToCamel(response.data),
-      }),
       startChatSession: builder.mutation({
         invalidatesTags: ["chat-session"],
         query: ({ agentId, message }: { agentId: string, message: string }) => ({
@@ -40,17 +32,16 @@ export const chatSessionApi = api
           body: { message },
         }),
       }),
-      updateChatSession: builder.mutation({
-        invalidatesTags: ["chat-session"],
-        query: ({ id, active, name, email }: any) => ({
-          url: `/agents/${id}`,
-          method: RequestMethod.PUT,
-          body: snakeToCamel({
-            active,
-            name,
-            email,
+      chatSessions: builder.query({
+        query: ({ search }) => ({
+          url: `/chat-sessions`,
+          method: RequestMethod.GET,
+          params: camelToSnake({
+            search,
           }),
         }),
+        providesTags: ["chat-sessions"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
       }),
     }),
   });
@@ -59,5 +50,5 @@ export const {
   useMessagesSessionQuery,
   useStartChatSessionMutation,
   useMessageChatSessionMutation,
-  useChatSessionQuery,
+  useChatSessionsQuery,
 } = chatSessionApi;

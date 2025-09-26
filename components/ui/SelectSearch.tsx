@@ -13,6 +13,7 @@ interface PropsSelectSearch {
   isLoading?: boolean
   onChange: (value: Option | null) => void
   name: string
+  value?: string;
   error?: boolean
   textError?: string
 }
@@ -23,6 +24,7 @@ export default function SelectSearch({
   isLoading,
   onChange,
   name,
+  value,
   error,
   textError,
 }: PropsSelectSearch) {
@@ -39,7 +41,7 @@ export default function SelectSearch({
       <div className="relative">
         <Select
           classNamePrefix="select"
-          defaultValue={colourOptions[0]}
+          defaultValue={colourOptions.filter(option => option.value == value)[0]}
           isDisabled={isDisabled}
           isLoading={isLoading}
           isClearable={isClearable}

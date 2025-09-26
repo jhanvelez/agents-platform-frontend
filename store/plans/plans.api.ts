@@ -21,25 +21,21 @@ export const usersApi = api
       }),
       storePlan: builder.mutation({
         invalidatesTags: ["plan"],
-        query: (gymData) => ({
+        query: (planData) => ({
           url: "plans",
           method: RequestMethod.POST,
-          body: gymData,
+          body: planData,
         }),
       }),
       updatePlan: builder.mutation({
         invalidatesTags: ["plan"],
-        query: ({ id, active, name, email }: any) => ({
+        query: ({ id, planData }: any) => ({
           url: `/plans/${id}`,
           method: RequestMethod.PUT,
-          body: snakeToCamel({
-            active,
-            name,
-            email,
-          }),
+          body: planData,
         }),
       }),
-      deletePlan: builder.mutation({
+      togglePlanStatus: builder.mutation({
         invalidatesTags: ["plan"],
         query: ({ id }) => ({
           url: `/plans/${id}/toggle-status`,
@@ -54,5 +50,5 @@ export const {
   useLazyPlansQuery,
   useStorePlanMutation,
   useUpdatePlanMutation,
-  useDeletePlanMutation,
+  useTogglePlanStatusMutation,
 } = usersApi;

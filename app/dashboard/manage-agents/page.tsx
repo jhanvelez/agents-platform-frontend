@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog"
 import {
   FileArchiveIcon,
+  UsersIcon,
   TrashIcon,
   Plus, Edit, Bot
 } from "lucide-react";
@@ -205,6 +206,7 @@ export default function LandingPage() {
                 <TableHead>Modelo</TableHead>
                 <TableHead>Habilidades</TableHead>
                 <TableHead>Data para entrenamiento</TableHead>
+                <TableHead>Usuarios</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -224,7 +226,7 @@ export default function LandingPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {String(agent.abilities).split(',').slice(0, 2).map((skill, index) => (
+                      {String(agent.abilities) > "" && String(agent.abilities).split(',').map((skill, index) => (
                         <Badge key={index} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
@@ -240,6 +242,17 @@ export default function LandingPage() {
                       }}
                     >
                       <FileArchiveIcon className="h-6 w-6" />
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 dark:bg-white/10 dark:text-white dark:ring-gray-700 dark:hover:bg-white/20"
+                      onClick={() => {
+                        router.push(`/dashboard/manage-agents/users/${agent.id}`);
+                      }}
+                    >
+                      <UsersIcon className="h-6 w-6" />
                     </Button>
                   </TableCell>
                   <TableCell>
@@ -275,9 +288,14 @@ export default function LandingPage() {
         validationSchema={agentsValidationSchema}
         onSubmit={(values, formikHelopers) => {
           if (currentAgent) {
-            updateAgent({
+            const agentData = {
               ...values,
               abilities: values.abilities.toString()
+            }
+
+            updateAgent({
+              id: currentAgent.id,
+              agentData,
             });
           }else {
             storeAgent({
@@ -426,7 +444,7 @@ export default function LandingPage() {
                         name="url"
                         value={values.url}
                         onChange={handleChange}
-                        placeholder="https://n8n.sustentiatec.com/webhook/chat/..."
+                        placeholder="https://ia.bybinary.com/webhook/chat/..."
                       />
                     </div>
                     <div className="space-y-2">

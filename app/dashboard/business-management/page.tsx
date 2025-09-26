@@ -59,6 +59,7 @@ export default function LandingPage() {
   // API hooks
   const { data: atentsData, refetch: refetchAtents } = useTenantsQuery({ search: "" })
   const [storeTenant, storeTenantResult] = useStoreTenantsMutation();
+  const [updateTenant, updateTenantResult] = useUpdateTenantsMutation();
   const [toggleTenant, toggleTenantResult] = useToggleTenantMutation();
 
   const { data: locationsData } = useLocationsQuery({ search: "" });
@@ -97,9 +98,35 @@ export default function LandingPage() {
     }
   }, [storeTenantResult]);
 
+
+  useEffect(() => {
+    if (updateTenantResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "La empresa se ha actualizado exitosamente."
+      );
+
+      refetchAtents();
+      setIsDialogOpen(false);
+    }
+
+    if (updateTenantResult.error) {
+      toasts.error(
+        "Error",
+        "La empresa no se ha actualizar exitosamente."
+      );
+
+      setIsDialogOpen(false);
+    }
+  }, [updateTenantResult]);
+
   const [currentTenant, setCurrentTenant] = useState<Tenant>();
   const handleEdit = (agent: Tenant) => {
-    setCurrentTenant(agent);
+    setCurrentTenant({
+      ...agent,
+      plan: agent.plan.id,
+      city: agent.city.id,
+    });
     setIsDialogOpen(true);
   }
 
@@ -219,7 +246,15 @@ export default function LandingPage() {
         initialValues={currentTenant ?? businessManagementInitialValues}
         validationSchema={businnessManagementValidationSchema}
         onSubmit={(values, formikHelopers) => {
-          storeTenant(values);
+          if (currentTenant) {
+            updateTenant({
+              id: currentTenant.id,
+              tenantData: values,
+            });
+          }else{
+            storeTenant(values);
+          }
+          
           formikHelopers.resetForm();
           setIsDialogOpen(false);
         }}
@@ -330,6 +365,7 @@ export default function LandingPage() {
                       <Label htmlFor="deparment">Departamento</Label>
                       <SelectSearch
                         name="department"
+                        value={values.department}
                         colourOptions={departments}
                         onChange={(value: any) => setFieldValue("department", value.value)}
                         error={!!errors.department}
@@ -345,6 +381,7 @@ export default function LandingPage() {
                             label: dep.name,
                           }
                         })}
+                        value={values.city}
                         name="city"
                         onChange={(value: any) => setFieldValue("city", value.value)}
                         error={!!errors.city}
@@ -359,7 +396,7 @@ export default function LandingPage() {
                         name="plan"
                         onValueChange={(value) => setFieldValue("plan", value)}
                       >
-                        <SelectTrigger label="Plan" error={!!errors.plan} textError={errors.plan}>
+                        <SelectTrigger label="Plan" error={!!errors.plan} textError={errors.plan ?? ''}>
                           <SelectValue placeholder="Selecciona un plan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -379,10 +416,9 @@ export default function LandingPage() {
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={!errors} onClick={() => {
-                    console.log(errors)
                     handleSubmit();
                   }}>
-                    {editingAgent ? "Actualizar" : "Crear"}
+                    {currentTenant ? "Actualizar" : "Crear"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

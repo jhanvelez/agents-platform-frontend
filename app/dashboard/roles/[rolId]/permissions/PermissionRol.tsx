@@ -26,10 +26,8 @@ import {
 } from '@/components/ui/Fields'
 import { toasts } from "@/lib/toasts"
 
-
 // API
 import {
-  usePermissionQuery,
   usePermissionsQuery,
 } from "@/store/permissions/permission.api"
 
@@ -41,7 +39,15 @@ import {
 
 // Types
 import { Permission } from "@/types/Permission"
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+
+// UI Accordion
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion"
 
 interface PermissionsProps {
   rolId: string;
@@ -51,13 +57,9 @@ export default function Permissions({ rolId }: PermissionsProps) {
   const router = useRouter();
 
   // API hooks
-  const { data: atentsData, refetch: refetchAtents } = usePermissionsQuery({ search: "" });
+  const { data: atentsData } = usePermissionsQuery({ search: "" });
   const [addPermission, addPermissionResult] = useAddPermissionRolMutation();
   const [removePermission, removePermissionResult] = useRemovePermissionRolMutation();
-
-  useEffect(() => {
-    console.info(rolId)
-  }, [rolId])
 
   const { data: rolData, refetch: refetchRol } = useRolQuery({
     id: rolId,
@@ -65,39 +67,34 @@ export default function Permissions({ rolId }: PermissionsProps) {
 
   useEffect(() => {
     if (addPermissionResult.isSuccess) {
-      toasts.success(
-        "Exito",
-        "Permiso agregado exitosamente."
-      );
-
+      toasts.success("Éxito", "Permiso agregado exitosamente.");
       refetchRol();
     }
-
     if (addPermissionResult.error) {
-      toasts.error(
-        "Error",
-        "No se podido agregar el permiso al rol."
-      );
+      toasts.error("Error", "No se pudo agregar el permiso al rol.");
     }
   }, [addPermissionResult]);
 
   useEffect(() => {
     if (removePermissionResult.isSuccess) {
-      toasts.success(
-        "Exito",
-        "Permiso removido exitosamente."
-      );
-
+      toasts.success("Éxito", "Permiso removido exitosamente.");
       refetchRol();
     }
-
     if (removePermissionResult.error) {
-      toasts.error(
-        "Error",
-        "No se podido remover el permiso."
-      );
+      toasts.error("Error", "No se pudo remover el permiso.");
     }
   }, [removePermissionResult]);
+
+  // 🔑 Agrupamos permisos por prefijo (entity)
+  const groupedByEntity = useMemo(() => {
+    if (!atentsData) return {};
+    return atentsData.reduce((acc: Record<string, Permission[]>, permission: Permission) => {
+      const [entity] = permission.action.split(".");
+      if (!acc[entity]) acc[entity] = [];
+      acc[entity].push(permission);
+      return acc;
+    }, {});
+  }, [atentsData]);
 
   return (
     <div className="space-y-6">
@@ -121,51 +118,55 @@ export default function Permissions({ rolId }: PermissionsProps) {
             Lista de permisos
           </CardTitle>
           <CardDescription>
-            Gestiona los permisos del rol.
+            Gestiona los permisos del rol agrupados por entidad.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Permiso</TableHead>
-                <TableHead>Descripción</TableHead>
-                <TableHead>Estado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rolData && atentsData && atentsData.map((permission: Permission, index: number) => (
-                <TableRow key={index+1}>
-                  <TableCell className="font-bold">
-                    {permission.action}
-                  </TableCell>
-                  <TableCell className="w-auto whitespace">
-                      {permission.subject}
-                  </TableCell>
-                  <TableCell>
-                    <ToggleField
-                      label='Eliminar'
-                      checked={rolData.permissions.some((item: Permission) => item.id === permission.id)}
-                      onChange={(e) => {
-                        console.log(e.target.checked)
-                        if (e.target.checked) {
-                          addPermission({
-                            rolId,
-                            permissionId: permission.id
-                          });
-                        } else if (!e.target.checked) {
-                          removePermission({
-                            rolId,
-                            permissionId: permission.id
-                          });
-                        }
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <Accordion type="single" collapsible>
+            {Object.entries(groupedByEntity).map(([entity, permissions], idx) => (
+              <AccordionItem key={entity} value={`item-${idx}`}>
+                <AccordionTrigger className="capitalize font-semibold text-lg">
+                  {entity}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Acción</TableHead>
+                        <TableHead>Descripción</TableHead>
+                        <TableHead>Estado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {permissions && permissions.map((permission: Permission) => (
+                        <TableRow key={permission.id}>
+                          <TableCell className="font-bold">
+                            {permission.action.split(".")[1]}
+                          </TableCell>
+                          <TableCell>{permission.subject}</TableCell>
+                          <TableCell>
+                            <ToggleField
+                              label="Asignar"
+                              checked={rolData?.permissions.some(
+                                (item: Permission) => item.id === permission.id
+                              )}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  addPermission({ rolId, permissionId: permission.id });
+                                } else {
+                                  removePermission({ rolId, permissionId: permission.id });
+                                }
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </CardContent>
       </Card>
     </div>

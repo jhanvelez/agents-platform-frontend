@@ -56,17 +56,17 @@ export function Sidebar() {
       )}
     >
       {/* Header del sidebar */}
-      <div className="flex h-16 items-center justify-between px-4 border-b my-auto">
+      <div className="flex h-16 items-center justify-between px-4 border-b my-auto bg-white ">
         {!collapsed && (
           <div className="flex items-center">
             <div className="flex justify-center">
               <Image
-                src={Logo}
+                src={Logo} 
                 alt="ByBinary logo"
-                className="w-24 "
+                className="w-24"
               />
             </div>
-            <span className="ml-2 text-sm font-semibold text-white">Agentes IA ByBinary</span>
+            <span className="ml-2 text-sm font-semibold text-gray-700">Agentes IA ByBinary</span>
           </div>
         )}
         <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">

@@ -1,4 +1,5 @@
 import { City } from "./locations"
+import { Plan } from "./plan"
 
 export interface Tenant {
   id: string;
@@ -9,7 +10,7 @@ export interface Tenant {
   address: string;
   department: string;
   city: City;
-  plan: string;
+  plan: Plan;
   monthlyTokenLimit: number;
   isActive: boolean;
 }

@@ -161,7 +161,6 @@ export default function LandingPage() {
                           toggleMoelIa({
                             id: model.id
                           });
-                          //console.log("nuevo estado:", e.target.checked)
                         }}
                       />
                     </div>

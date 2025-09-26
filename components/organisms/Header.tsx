@@ -14,7 +14,9 @@ export function Header() {
           {/* Logo / Título */}
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-              Sustent<span className="font-thin">IA</span>tec
+              <span className="font-thin">Tu{" "}</span>voz,{" "}
+              <span className="font-thin">tus{" "}</span>datos,{" "}
+              <span className="font-thin">nuestra{" "}</span>inteligencia.
             </h1>
           </div>
 

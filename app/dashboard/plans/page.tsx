@@ -35,82 +35,88 @@ import {
   usePlansQuery,
   useStorePlanMutation,
   useUpdatePlanMutation,
-  useDeletePlanMutation,
+  useTogglePlanStatusMutation,
 } from "@/store/plans/plans.api";
 
 // Types
 import { Plan } from "@/types/plan"
-import { Agent } from "@/types/agent"
 
 export default function LandingPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeletedOpen, setIsDeletedOpen] = useState(false)
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 
   // API hooks
   const { data: atentsData, refetch: refetchAtents } = usePlansQuery({ search: "" });
-  const [storeAtent, storeAtentResult] = useStorePlanMutation();
-  const [deleteAtent, deleteAtentResult] = useDeletePlanMutation();
+  const [storePlan, storePlanResult] = useStorePlanMutation();
+  const [updatePlan, updatePlanResult] = useUpdatePlanMutation();
+  const [togglePlan, tooglePlanResult] = useTogglePlanStatusMutation();
 
   useEffect(() => {
-    if (storeAtentResult.isSuccess) {
+    if (storePlanResult.isSuccess) {
       toasts.success(
         "Exito",
-        "La empresa se ha registrado exitosamente."
+        "el plan se ha registrado exitosamente."
       );
 
       refetchAtents();
       setIsDialogOpen(false);
     }
 
-    if (storeAtentResult.error) {
+    if (storePlanResult.error) {
       toasts.error(
         "Error",
-        "La empresa no se ha registrado exitosamente."
+        "El plan no se ha registrado exitosamente."
       );
 
       setIsDialogOpen(false);
     }
-  }, [storeAtentResult]);
+  }, [storePlanResult]);
 
-  const [currentTenant, setCurrentTenant] = useState<Plan>();
-  const handleEdit = (agent: Plan) => {
-    setCurrentTenant(agent);
+  useEffect(() => {
+    if (updatePlanResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "El plan se ha actualizado exitosamente."
+      );
+
+      refetchAtents();
+      setIsDialogOpen(false);
+    }
+
+    if (updatePlanResult.error) {
+      toasts.error(
+        "Error",
+        "El plan no se ha podido actualizar."
+      );
+
+      setIsDialogOpen(false);
+    }
+  }, [updatePlanResult]);
+
+  const [currentPlan, setCurrentPlan] = useState<Plan>();
+  const handleEdit = (plan: Plan) => {
+    setCurrentPlan(plan);
     setIsDialogOpen(true);
   }
 
-  const [currentId, setCurrentId] = useState<string>('');
-  const handleDelete = (id: string) => {
-    setCurrentId(id);
-    setIsDeletedOpen(true);
-  }
-
-  const deleteConfirm = () => {
-    deleteAtent({
-      id: currentId
-    });
-  }
-
   useEffect(() => {
-    if (deleteAtentResult.isSuccess) {
+    if (tooglePlanResult.isSuccess) {
       toasts.success(
         "Exito",
-        "La empresa se ha eliminado exitosamente."
+        "Cambio realizado exitosamente."
       );
 
       refetchAtents();
       setIsDeletedOpen(false);
     }
 
-    if (deleteAtentResult.error) {
+    if (tooglePlanResult.error) {
       toasts.error(
         "Error",
-        "La empresa no se ha podido eliminar."
+        "No se ha podido realizar el cambio."
       );
-
-      setIsDeletedOpen(false);
     }
-  }, [deleteAtentResult]);
+  }, [tooglePlanResult]);
 
 
 
@@ -153,40 +159,37 @@ export default function LandingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {atentsData && atentsData.map((agent: Plan, index: number) => (
+              {atentsData && atentsData.map((plan: Plan, index: number) => (
                 <TableRow key={index+1}>
                   <TableCell>{index+1}</TableCell>
-                  <TableCell className="font-medium">{agent.name}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{agent.maxAgents.toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">{plan.name}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{plan.maxAgents.toLocaleString()}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{agent.maxConsultsPerMonth.toLocaleString()}</Badge>
+                    <Badge variant="outline">{plan.maxConsultsPerMonth.toLocaleString()}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {agent.monthlyTokenLimit.toLocaleString()}
+                      {plan.monthlyTokenLimit.toLocaleString()}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={agent.isActive ? "default" : "secondary"}>
-                      {agent.isActive ? "Activo" : "Inactivo"}
+                    <Badge variant={plan.isActive ? "default" : "secondary"}>
+                      {plan.isActive ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(plan)}>
                         <Edit className="h-3 w-3" />
                       </Button>
                       <div className="pt-1">
                         <ToggleField
                           label='Eliminar'
-                          checked={agent.isActive}
+                          checked={plan.isActive}
                           onChange={(e) => {
-                            console.log(e.target.checked)
-                            if (e.target.checked) {
-                              console.log("Activar")
-                            } else if (!e.target.checked) {
-                              console.log("Inactivar")
-                            }
+                            togglePlan({
+                              id: plan.id
+                            });
                           }}
                         />
                       </div>
@@ -202,10 +205,18 @@ export default function LandingPage() {
       {/* Modal Crear/Editar */}
       <Formik
         enableReinitialize
-        initialValues={currentTenant ?? plansInitialValues}
+        initialValues={currentPlan ?? plansInitialValues}
         validationSchema={plansValidationSchema}
         onSubmit={(values, formikHelopers) => {
-          storeAtent(values);
+          if (currentPlan) {
+            updatePlan({
+              id: currentPlan.id,
+              planData: values,
+            });
+          }else{
+            storePlan(values);
+          }
+          
           formikHelopers.resetForm();
           setIsDialogOpen(false);
         }}
@@ -215,9 +226,9 @@ export default function LandingPage() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingAgent ? "Editar Plan" : "Crear Plan"}</DialogTitle>
+                  <DialogTitle>{currentPlan ? "Editar Plan" : "Crear Plan"}</DialogTitle>
                   <DialogDescription>
-                    {editingAgent
+                    {currentPlan
                       ? "Edita los detalles del plan"
                       : "Completa los detalles del nuevo plan"}
                   </DialogDescription>
@@ -280,7 +291,7 @@ export default function LandingPage() {
                     console.log(errors)
                     handleSubmit();
                   }}>
-                    {editingAgent ? "Actualizar" : "Crear"}
+                    {currentPlan ? "Actualizar" : "Crear"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -288,49 +299,6 @@ export default function LandingPage() {
           );
         }}
       </Formik>
-
-      {/** 
-       * Moidal for deleted
-       */}
-      <Dialog open={isDeletedOpen} onOpenChange={setIsDeletedOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <div>
-            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
-              <TrashIcon />
-            </div>
-            <div className="mt-3 text-center sm:mt-5">
-              <DialogTitle className="text-base font-semibold text-gray-900">
-                ¿Eliminar la empresa?
-              </DialogTitle>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">
-                  Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => deleteConfirm()}
-                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-              >
-                Eliminar
-              </button>
-              <button
-                type="button"
-                data-autofocus
-                onClick={() => setIsDeletedOpen(false)}
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-              >
-                Cancelar
-              </button>
-            </div>
-          </DialogFooter>
-          </DialogContent>
-      </Dialog>
     </div>
   );
 }
