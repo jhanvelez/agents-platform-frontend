@@ -1,6 +1,10 @@
 "use client";
 import { Sidebar } from "@/components/organisms/Sidebar";
 import { Header } from "@/components/organisms/Header";
+import { Footer } from "@/components/organisms/Footer";
+
+
+import ClientWrapper from "@/components/ClientWrapper";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,7 +12,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
+        <Footer />
       </div>
     </div>
   );

@@ -8,5 +8,6 @@ export interface User {
   phoneNumber: number; 
   serviceStartSate: string;
   password?: string;
+  isActive: boolean;
   roles: [];
 }

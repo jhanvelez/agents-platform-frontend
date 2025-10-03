@@ -46,20 +46,11 @@ export const usersApi = api
           }),
         }),
       }),
-      deleteUser: builder.mutation({
-        query: ({ id }) => ({
-          url: `/users/${id}`,
-          method: RequestMethod.DELETE,
-        }),
-      }),
       toggleUser: builder.mutation({
         invalidatesTags: ["user"],
-        query: ({ id, state }: any) => ({
-          url: `admin/users/state/${id}`,
+        query: ({ id }: any) => ({
+          url: `/users/${id}/toggle-status`,
           method: RequestMethod.PUT,
-          body: snakeToCamel({
-            state
-          }),
         }),
       }),
     }),
@@ -70,6 +61,5 @@ export const {
   useUserQuery,
   useStoreUserMutation,
   useUpdateUserMutation,
-  useDeleteUserMutation,
   useToggleUserMutation,
 } = usersApi;

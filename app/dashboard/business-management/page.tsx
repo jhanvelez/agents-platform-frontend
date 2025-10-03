@@ -19,7 +19,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SelectSearch from "@/components/ui/SelectSearch"
 import { Pagination } from "@/components/ui/PaginationUI"
-import { Plus, Edit, Bot } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Bot,
+  Search,
+  Filter,
+} from "lucide-react";
 import {
   ToggleField,
 } from '@/components/ui/Fields'
@@ -30,7 +36,6 @@ import {
   businnessManagementValidationSchema,
 } from "@/shared/schemas/business-managent";
 import { toasts } from "@/lib/toasts"
-import { TrashIcon } from "lucide-react";
 
 // API
 import {
@@ -53,11 +58,12 @@ const documentTypes = ["CC", "CE", "TI", "NIT"]
 export default function LandingPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [municipalities, setMunicipalities] = useState<City[]>([]);
 
   // API hooks
-  const { data: atentsData, refetch: refetchAtents } = useTenantsQuery({ search: "" })
+  const { data: atentsData, refetch: refetchAtents } = useTenantsQuery({ search: searchTerm })
   const [storeTenant, storeTenantResult] = useStoreTenantsMutation();
   const [updateTenant, updateTenantResult] = useUpdateTenantsMutation();
   const [toggleTenant, toggleTenantResult] = useToggleTenantMutation();
@@ -130,7 +136,6 @@ export default function LandingPage() {
     setIsDialogOpen(true);
   }
 
-
   useEffect(() => {
     if (toggleTenantResult.isSuccess) {
       toasts.success(
@@ -149,6 +154,10 @@ export default function LandingPage() {
     }
   }, [toggleTenantResult]);
 
+  const applyFilters = () => {
+    console.log("Se hace el envio de los valores")
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -163,6 +172,45 @@ export default function LandingPage() {
           Crear Empresa
         </Button>
       </div>
+
+      {/* Filtros */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros de Búsqueda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Buscar</label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar en conversaciones..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-4">
+              <Button onClick={applyFilters}>Aplicar Filtros</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                }}
+              >
+                Limpiar Filtros
+              </Button>
+            </div>
+
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

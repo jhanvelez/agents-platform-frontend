@@ -27,8 +27,9 @@ import {
 import {
   FileArchiveIcon,
   UsersIcon,
-  TrashIcon,
-  Plus, Edit, Bot
+  Plus, Edit, Bot,
+  Search,
+  Filter,
 } from "lucide-react";
 import {
   ToggleField,
@@ -72,6 +73,7 @@ const personalities = ["Profesional y empático", "Persuasivo y amigable", "Anal
 
 export default function LandingPage() {
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: agentsData, refetch: refetchAgents } = useAgentsQuery({ search: "" });
@@ -91,7 +93,7 @@ export default function LandingPage() {
 
   const [storeAgent, storeAgentResult] = useStoreAgentMutation();
 
-  const { data: atentsData } = useTenantsQuery({ search: "" })
+  const { data: atentsData } = useTenantsQuery({ search: searchTerm })
 
   useEffect(() => {
     if (storeAgentResult.isSuccess) {
@@ -127,7 +129,6 @@ export default function LandingPage() {
   }
 
   const [updateAgent, updateAgentResult] = useUpdateAgentMutation();
-  
   useEffect(() => {
     if (updateAgentResult.isSuccess) {
       toasts.success(
@@ -170,6 +171,10 @@ export default function LandingPage() {
     }
   }, [toggleAgentResult]);
 
+  const applyFilters = () => {
+    console.log("Se hace el envio de los valores")
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -182,6 +187,44 @@ export default function LandingPage() {
           Crear Agente
         </Button>
       </div>
+
+      {/* Filtros */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros de Búsqueda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Buscar</label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar en conversaciones..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <Button onClick={applyFilters}>Aplicar Filtros</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchTerm("");
+              }}
+            >
+              Limpiar Filtros
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

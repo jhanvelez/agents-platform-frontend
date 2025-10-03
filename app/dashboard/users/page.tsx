@@ -40,6 +40,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  ToggleField,
+} from '@/components/ui/Fields'
 
 
 // API
@@ -66,14 +69,13 @@ import {
 
 export default function Users() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isDeletedOpen, setIsDeletedOpen] = useState(false)
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 
   // API hooks
   const { data: usersData, refetch: refetchAtents } = useUsersQuery({ search: "" });
   const { data: rolesData, } = useRolesQuery({ search: "" });
   const [storeAtent, storeAtentResult] = useStoreUserMutation();
-  const [deleteAtent, deleteAtentResult] = useToggleUserMutation();
+  const [toggleUser, toggleUserResult] = useToggleUserMutation();
 
   useEffect(() => {
     console.log(usersData)
@@ -106,40 +108,21 @@ export default function Users() {
     setIsDialogOpen(true);
   }
 
-  const [currentId, setCurrentId] = useState<string>('');
-  const handleDelete = (id: string) => {
-    setCurrentId(id);
-    setIsDeletedOpen(true);
-  }
-
-  const deleteConfirm = () => {
-    deleteAtent({
-      id: currentId
-    });
-  }
-
   useEffect(() => {
-    if (deleteAtentResult.isSuccess) {
+    if (toggleUserResult.isSuccess) {
       toasts.success(
         "Exito",
-        "El usuario se ha eliminado exitosamente."
+        "El cambio se ha realizado exitosamente."
       );
-
-      refetchAtents();
-      setIsDeletedOpen(false);
     }
 
-    if (deleteAtentResult.error) {
+    if (toggleUserResult.error) {
       toasts.error(
         "Error",
-        "El usuario no se ha podido eliminar."
+        "El cambio no se ha podido realizar."
       );
-
-      setIsDeletedOpen(false);
     }
-  }, [deleteAtentResult]);
-
-
+  }, [toggleUserResult]);
 
   return (
     <div className="space-y-6">
@@ -179,29 +162,37 @@ export default function Users() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {usersData && usersData.map((agent: User, index: number) => (
+              {usersData && usersData.map((user: User, index: number) => (
                 <TableRow key={index+1}>
                   <TableCell>{index+1}</TableCell>
-                  <TableCell className="font-medium">{agent.firstName}{" "}{agent.lastName}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{agent.email}</TableCell>
+                  <TableCell className="font-medium">{user.firstName}{" "}{user.lastName}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{agent.documentType}{" / "}{agent.documentId}</Badge>
+                    <Badge variant="outline">{user.documentType}{" / "}{user.documentId}</Badge>
                   </TableCell>
                   <TableCell>
-                    {agent.roles.map((rol: Rol, index: number) => {
+                    {user.roles.map((rol: Rol, index: number) => {
                       return (
-                        <Badge key={`${index}-${agent.id}`} variant="outline">{rol.name}</Badge>
+                        <Badge key={`${index}-${user.id}`} variant="outline">{rol.name}</Badge>
                       );
                     })}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(user)}>
                         <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(agent.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      <div className="pt-1">
+                        <ToggleField
+                          label="Estado"
+                          checked={user.isActive}
+                          onChange={(e) => {
+                            toggleUser({
+                              id: user.id
+                            });
+                          }}
+                        />
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -370,50 +361,6 @@ export default function Users() {
           );
         }}
       </Formik>
-
-      {/** 
-       * Moidal for deleted
-       */}
-
-            <Dialog open={isDeletedOpen} onOpenChange={setIsDeletedOpen}>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <div>
-                  <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-100">
-                    <TrashIcon />
-                  </div>
-                  <div className="mt-3 text-center sm:mt-5">
-                    <DialogTitle className="text-base font-semibold text-gray-900">
-                      ¿Eliminar la empresa?
-                    </DialogTitle>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Se eliminará la empresa y los usuarios no podrán ver la información de nuevo.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                    <button
-                      type="button"
-                      onClick={() => deleteConfirm()}
-                      className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-                    >
-                      Eliminar
-                    </button>
-                    <button
-                      type="button"
-                      data-autofocus
-                      onClick={() => setIsDeletedOpen(false)}
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 sm:col-start-1 sm:mt-0"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </DialogFooter>
-                </DialogContent>
-            </Dialog>
     </div>
   );
 }

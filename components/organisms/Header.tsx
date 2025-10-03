@@ -2,28 +2,31 @@
 
 import { useRouter } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { Bot } from "lucide-react";
+import { ChevronDownIcon, BuildingOfficeIcon } from '@heroicons/react/20/solid'
+import { useUser } from "@/hooks/useUser";
 
 export function Header() {
   const router = useRouter();
+  const user = useUser();
+
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo / Título */}
           <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full flex items-center justify-center">
+              <BuildingOfficeIcon className="h-5 w-5 text-gray-500" />
+            </div>
             <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
-              <span className="font-thin">Tu{" "}</span>voz,{" "}
-              <span className="font-thin">tus{" "}</span>datos,{" "}
-              <span className="font-thin">nuestra{" "}</span>inteligencia.
+              <span className="font-light capitalize">{user.tenant}</span>
             </h1>
           </div>
 
           {/* Área de navegación o perfil */}
           <Menu as="div" className="relative inline-block">
             <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
-              Cuenta
+              {user.firstName}{" "}{user.lastName}
               <ChevronDownIcon aria-hidden="true" className="-mr-1 size-5 text-gray-400" />
             </MenuButton>
 
@@ -34,7 +37,7 @@ export function Header() {
               <div className="px-4 py-3">
                 <p className="text-sm">Iniciado sesión como</p>
                 <p className="truncate text-sm font-medium text-gray-900">
-                  tom@example.com
+                  {user.email}
                 </p>
               </div>
               <div className="py-1">

@@ -24,29 +24,43 @@ import {
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAbility } from "@/providers/AbilityProvider"
+import type { Actions, Subjects } from "@/lib/casl";
 
 // Logo
 import Logo from "@/public/logo.png";
 
-const menuItems = [
-  { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard" },
-  { id: "agents", label: "Agentes IA", icon: Bot, path: "/dashboard/agents" },
-  { id: "manage-agents", label: "Gestión Agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents" },
-  { id: "models-ia", label: "Modelos IA", icon: Brain, path: "/dashboard/models-ia" },
-  { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management" },
-  { id: "plans", label: "Planes", icon: SparklesIcon, path: "/dashboard/plans" },
-  { id: "conversations", label: "Historial Conversaciones", icon: MessageSquare, path: "/dashboard/conversations" },
-  { id: "analytics", label: "Análisis Consultas", icon: BarChart3, path: "/dashboard/analytics" },
-  { id: "monitoring", label: "Monitoreo", icon: Activity, path: "/dashboard/monitoring" },
-  { id: "users", label: "Gestión Usuarios", icon: Users, path: "/dashboard/users" },
-  { id: "roles", label: "Roles", icon: Shield, path: "/dashboard/roles" },
-  { id: "settings", label: "Configuración", icon: SettingsIcon, path: "/dashboard/settings" },
-  { id: "profile", label: "Mi Perfil", icon: User, path: "/dashboard/profile" },
-]
+export interface MenuItem {
+  id: string;
+  label: string;
+  icon: any;
+  path: string;
+  ability: {
+    action: Actions;
+    subject: Subjects;
+  };
+}
+
+export const menuItems: MenuItem[] = [
+  { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard", ability: { action: "read", subject: "Dashboard" } },
+  { id: "agents", label: "Agentes IA", icon: Bot, path: "/dashboard/agents", ability: { action: "read", subject: "Agent" } },
+  { id: "manage-agents", label: "Gestión Agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents", ability: { action: "manage", subject: "Agent" } },
+  { id: "models-ia", label: "Modelos IA", icon: Brain, path: "/dashboard/models-ia", ability: { action: "read", subject: "Model" } },
+  { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management", ability: { action: "manage", subject: "Business" } },
+  { id: "plans", label: "Planes", icon: SparklesIcon, path: "/dashboard/plans", ability: { action: "manage", subject: "Plan" } },
+  { id: "conversations", label: "Historial Conversaciones", icon: MessageSquare, path: "/dashboard/conversations", ability: { action: "read", subject: "Conversation" } },
+  { id: "analytics", label: "Análisis Consultas", icon: BarChart3, path: "/dashboard/analytics", ability: { action: "read", subject: "Analytics" } },
+  { id: "monitoring", label: "Monitoreo", icon: Activity, path: "/dashboard/monitoring", ability: { action: "read", subject: "Monitoring" } },
+  { id: "users", label: "Gestión Usuarios", icon: Users, path: "/dashboard/users", ability: { action: "read", subject: "User" } },
+  { id: "roles", label: "Roles", icon: Shield, path: "/dashboard/roles", ability: { action: "read", subject: "Roles" } },
+  { id: "settings", label: "Configuración", icon: SettingsIcon, path: "/dashboard/settings", ability: { action: "update", subject: "Settings" } },
+  { id: "profile", label: "Mi Perfil", icon: User, path: "/dashboard/profile", ability: { action: "read", subject: "Settings" } },
+];
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
-  const pathname = usePathname()
+  const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+  const ability = useAbility();
 
   return (
     <div
@@ -77,7 +91,9 @@ export function Sidebar() {
       {/* Menú */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-2">
-          {menuItems.map((item) => {
+          {menuItems
+          .filter((item) => ability.can(item.ability.action, item.ability.subject))
+          .map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.path
             return (
