@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toasts } from "@/lib/toasts"
 
 // API
 import {
@@ -105,6 +106,25 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
 
     setChatMessage("");
   };
+
+  useEffect(() => {
+    if (exportChatResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "Se ha enviado el correo exitosamente."
+      );
+      setIsDialogOpen(false);
+    }
+
+    if (exportChatResult.error) {
+      toasts.error(
+        "Error",
+        "No se ha podido exportar el chat correctamente."
+      );
+      setIsDialogOpen(false);
+    }
+  }, [exportChatResult]);
+  
 
   return (
     <div className="flex flex-col h-[calc(84vh-10px)] bg-white/30 backdrop-blur-md">
@@ -219,7 +239,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
         validationSchema={exportChatValidationSchema}
         onSubmit={(values, formikHelopers) => {
           exportChat({
-            agentId: sessionId,
+            sessionId: sessionId,
             email: values.email,
           });
           
@@ -248,7 +268,9 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                         type="email"
                         value={values.email}
                         onChange={handleChange}
-                        placeholder="Email para enviar el chat"
+                        placeholder="exportar@bybinary.com.co"
+                        error={!!errors.email}
+                        textError={errors.email}
                       />
                     </div>
                   </div>

@@ -45,8 +45,8 @@ export const chatSessionApi = api
       }),
       exportChatSession: builder.mutation({
         invalidatesTags: ["chat-session"],
-        query: ({ agentId, email }: { agentId: string, email: string }) => ({
-          url: `chat/${agentId}/start`,
+        query: ({ sessionId, email }: { sessionId: string, email: string }) => ({
+          url: `chat/${sessionId}/export`,
           method: RequestMethod.POST,
           body: { email },
         }),
