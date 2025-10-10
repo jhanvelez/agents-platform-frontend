@@ -4,6 +4,7 @@ import { ModelIA } from './models-ia'
 export interface Agent {
   id: string;
   name: string;
+  code: string;
   description: string;
   model: ModelIA;
   modelId: string;

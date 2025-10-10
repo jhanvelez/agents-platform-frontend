@@ -43,6 +43,14 @@ export const chatSessionApi = api
         providesTags: ["chat-sessions"],
         transformResponse: (response: any) => snakeToCamel(response.data),
       }),
+      exportChatSession: builder.mutation({
+        invalidatesTags: ["chat-session"],
+        query: ({ agentId, email }: { agentId: string, email: string }) => ({
+          url: `chat/${agentId}/start`,
+          method: RequestMethod.POST,
+          body: { email },
+        }),
+      }),
     }),
   });
 
@@ -51,4 +59,5 @@ export const {
   useStartChatSessionMutation,
   useMessageChatSessionMutation,
   useChatSessionsQuery,
+  useExportChatSessionMutation,
 } = chatSessionApi;

@@ -4,7 +4,7 @@ import { api } from "@/store/app.api";
 import { RequestMethod } from "@/shared/utils/RequestMethod";
 
 export const usersApi = api
-  .enhanceEndpoints({ addTagTypes: ["agent", "agents"] })
+  .enhanceEndpoints({ addTagTypes: ["agent", "agents", "agent-users"] })
   .injectEndpoints({
     overrideExisting: false,
     endpoints: (builder) => ({
@@ -22,6 +22,14 @@ export const usersApi = api
       agent: builder.query({
         query: ({ id } : { id: string }) => ({
           url: `/agents/${id}`,
+          method: RequestMethod.GET,
+        }),
+        providesTags: ["agents"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
+      }),
+      agentsPermittedAccess: builder.query({
+        query: () => ({
+          url: `/agents/permitted-access`,
           method: RequestMethod.GET,
         }),
         providesTags: ["agents"],
@@ -91,6 +99,34 @@ export const usersApi = api
           method: RequestMethod.DELETE,
         }),
       }),
+      agentUsers: builder.query({
+        query: ({ agentId }: { agentId: string; }) => ({
+          url: `/agents/${agentId}/users`,
+          method: RequestMethod.GET,
+        }),
+        providesTags: ["agents"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
+      }),
+      hasAccessUserAgent: builder.mutation({
+        invalidatesTags: ["agent"],
+        query: ({ userId, agentId }: { userId: string; agentId: string; }) => ({
+          url: `/agents/${agentId}/assign-user`,
+          method: RequestMethod.PATCH,
+          body: camelToSnake({
+            userId
+          }),
+        }),
+      }),
+      removeAccessUserAgent: builder.mutation({
+        invalidatesTags: ["agent"],
+        query: ({ userId, agentId }: { userId: string; agentId: string; }) => ({
+          url: `/agents/${agentId}/remove-user`,
+          method: RequestMethod.PATCH,
+          body: camelToSnake({
+            userId
+          }),
+        }),
+      }),
     }),
   });
 
@@ -104,4 +140,8 @@ export const {
   useUploadFileAgentMutation,
   useGetFilesAgentQuery,
   useDeleteFileAgentMutation,
+  useAgentUsersQuery,
+  useHasAccessUserAgentMutation,
+  useRemoveAccessUserAgentMutation,
+  useAgentsPermittedAccessQuery,
 } = usersApi;

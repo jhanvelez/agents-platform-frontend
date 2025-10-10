@@ -6,7 +6,7 @@ import { RequestMethod } from "@/shared/utils/RequestMethod";
 export const usersApi = api
   .enhanceEndpoints({ addTagTypes: ["user", "profiles", "users"] })
   .injectEndpoints({
-    overrideExisting: false,
+    overrideExisting: true,
     endpoints: (builder) => ({
       users: builder.query({
         query: ({search}) => ({

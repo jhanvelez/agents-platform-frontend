@@ -95,7 +95,14 @@ export function Sidebar() {
           .filter((item) => ability.can(item.ability.action, item.ability.subject))
           .map((item) => {
             const Icon = item.icon
-            const isActive = pathname === item.path
+
+            const itemSegments = item.path.split("/").filter(Boolean);
+
+            const isActive =
+              pathname === item.path ||
+              (pathname.startsWith(item.path + "/") &&
+                itemSegments.length > 1);
+
             return (
               <Link key={item.id} href={item.path} className="block">
                 <Button

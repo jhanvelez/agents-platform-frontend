@@ -26,7 +26,7 @@ import { es } from "date-fns/locale"
 
 // API
 import {
-  useAgentsQuery
+  useAgentsPermittedAccessQuery
 } from "@/store/manage-agents/manage-agents.api"
 
 import {
@@ -40,7 +40,7 @@ import { ChatSession } from "@/types/chat-session"
 export default function LoginPage() {
   const router = useRouter();
 
-  const { data: agentsData } = useAgentsQuery({ search: "" });
+  const { data: agentsData } = useAgentsPermittedAccessQuery({ });
 
   const { data: chatSessions } = useChatSessionsQuery({ search: "" });
 

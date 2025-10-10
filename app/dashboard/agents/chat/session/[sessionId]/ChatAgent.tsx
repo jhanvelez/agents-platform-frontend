@@ -1,41 +1,68 @@
 'use client';
 
 import { useEffect, useState, useMemo } from "react"
+import { Formik } from "formik";
+import {
+  Bot,
+  AlertTriangle,
+  FileDown,
+} from "lucide-react"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
-import { Bot, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 // API
 import {
   useMessagesSessionQuery,
   useMessageChatSessionMutation,
+  useExportChatSessionMutation,
 } from "@/store/chat/chat.api"
 
 // Type
 import { Agent } from '@/types/agent'
-import { Message } from "@/types/message";
 
 // Utils
 import { formatTime } from "@/utils/dateFormat";
+
+// Schema
+import {
+  exportChatInitialValues,
+  exportChatValidationSchema,
+} from "@/shared/schemas/chat.schema";
 
 interface ChatClientProps {
   sessionId: string;
 };
 
 export default function ChatClient({ sessionId }: ChatClientProps) {
-  const [selectedAgent, setSelectedAgent] = useState<Agent>();
   const [chatMessage, setChatMessage] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent>();
   const [localMessages, setLocalMessages] = useState<any[]>([]);
 
   const { data: sessionData, refetch: refetchMessages } = useMessagesSessionQuery({ sessionId });
+
+  const [exportChat, exportChatResult] = useExportChatSessionMutation();
 
   const [messageChatSession, messageChatSessionResult] = useMessageChatSessionMutation();
 
   // Refrescar mensajes cuando llegan del backend
   useEffect(() => {
     if (messageChatSessionResult.isSuccess) {
+      setLocalMessages([]);
       refetchMessages();
     }
   }, [messageChatSessionResult]);
@@ -48,6 +75,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
 
   const chatMessages = useMemo(() => {
     if (!sessionData) return [...localMessages];
+
     return [...sessionData.messages, ...localMessages].map((model: any) => ({
       id: model.id ?? Math.random().toString(),
       text: model.content ?? model.text,
@@ -79,19 +107,31 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(93vh-50px)] bg-white/30 backdrop-blur-md">
+    <div className="flex flex-col h-[calc(84vh-10px)] bg-white/30 backdrop-blur-md">
       {/* Header */}
-      <CardHeader className="py-1">
-        <CardTitle>
-          {selectedAgent ? `Chat con: ${selectedAgent.name}` : "Selecciona un agente"}
-        </CardTitle>
-        {selectedAgent && (
-          <CardDescription>
-            {selectedAgent.description} • Estado:{" "}
-            {selectedAgent.isActive ? "Activo" : "Inactivo"}
-          </CardDescription>
-        )}
-      </CardHeader>
+      <CardTitle className="flex items-center justify-between">
+        <CardHeader className="py-1">
+          <CardTitle>
+            {selectedAgent ? `Chat con: ${selectedAgent.name}` : "Selecciona un agente"}
+          </CardTitle>
+          {selectedAgent && (
+            <CardDescription>
+              {selectedAgent.description} • Estado:{" "}
+              {selectedAgent.isActive ? "Activo" : "Inactivo"}
+            </CardDescription>
+          )}
+        </CardHeader>
+        <Button
+          size="sm"
+          className="gap-1 bg-green-600 hover:bg-green-700 "
+          onClick={() => {
+            setIsDialogOpen(true);
+          }}
+        >
+          <FileDown className="h-3 w-3" />
+          Exportar conversación
+        </Button>
+      </CardTitle>
 
       {/* Chat Body con scroll */}
       <div className="flex-1 overflow-hidden">
@@ -137,7 +177,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       </div>
 
       {/* Input Box (fuera del scroll, siempre visible abajo) */}
-      <div className="w-full max-w-3xl mx-auto px-4 pb-4">
+      <div className="w-full max-w-3xl mx-auto px-4 pb-0">
         <Card
           className="p-4 border border-white/20  bg-white/30 backdrop-blur-md shadow-lg rounded-2xl"
         >
@@ -155,6 +195,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                   handleSendMessage();
                 }
               }}
+              disabled={messageChatSessionResult.isLoading}
             />
           </div>
 
@@ -168,6 +209,68 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
           )}
         </Card>
       </div>
+
+
+
+      {/* Modal Crear/Editar */}
+      <Formik
+        enableReinitialize
+        initialValues={exportChatInitialValues}
+        validationSchema={exportChatValidationSchema}
+        onSubmit={(values, formikHelopers) => {
+          exportChat({
+            agentId: sessionId,
+            email: values.email,
+          });
+          
+          formikHelopers.resetForm();
+          setIsDialogOpen(false);
+        }}
+      >
+        {({ handleSubmit, errors, handleChange, setFieldValue, values }) => {
+          return (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Exportar Chat</DialogTitle>
+                  <DialogDescription>
+                    Ingrese el correo al cual se enviará la conversación.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Email *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={values.email}
+                        onChange={handleChange}
+                        placeholder="Email para enviar el chat"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={!errors} onClick={() => {
+                    console.log(errors)
+                    handleSubmit();
+                  }}>
+                    Exportar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          );
+        }}
+      </Formik>
+
     </div>
   );
 }

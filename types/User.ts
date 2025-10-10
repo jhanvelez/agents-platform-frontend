@@ -1,3 +1,5 @@
+import { Rol } from "./Rol"
+
 export interface User {
   id: string;
   firstName: string;
@@ -10,4 +12,12 @@ export interface User {
   password?: string;
   isActive: boolean;
   roles: [];
+}
+
+export interface UserAgent {
+  id: string;
+  firstName: string;
+  lastName: string;
+  roles: Rol[];
+  hasAccess: boolean;
 }

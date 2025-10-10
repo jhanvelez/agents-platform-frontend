@@ -403,7 +403,39 @@ export default function LandingPage() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="code">Codigo Agente *</Label>
+                      <Input
+                        id="code"
+                        name="code"
+                        value={values.code}
+                        onChange={handleChange}
+                        placeholder="Codigo workflow"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="personality">Personalidad</Label>
+                      <Select
+                        value={values.personality}
+                        onValueChange={(value) => setFieldValue("personality", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona personalidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {personalities.map((personality) => (
+                            <SelectItem key={personality} value={personality}>
+                              {personality}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
+
+                  
 
                   <div className="space-y-2">
                     <Label htmlFor="description">Descripción</Label>
@@ -441,41 +473,6 @@ export default function LandingPage() {
                           </Label>
                         </div>
                       ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="personality">Personalidad</Label>
-                      <Select
-                        value={values.personality}
-                        onValueChange={(value) => setFieldValue("personality", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona personalidad" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {personalities.map((personality) => (
-                            <SelectItem key={personality} value={personality}>
-                              {personality}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Estado *</Label>
-                      <Select
-                        onValueChange={(value: "active" | "inactive") => setFieldValue("status", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Activo</SelectItem>
-                          <SelectItem value="inactive">Inactivo</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
                   </div>
 
