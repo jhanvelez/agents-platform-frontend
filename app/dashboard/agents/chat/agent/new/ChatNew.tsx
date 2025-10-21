@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -24,6 +24,7 @@ import {
 import {
   Agent
 } from '@/types/agent'
+import { toasts } from '@/lib/toasts'
 
 export default function ChatClient({ agentId }: ChatClientProps) {
   const router = useRouter();
@@ -33,7 +34,11 @@ export default function ChatClient({ agentId }: ChatClientProps) {
     Array<{ id: number; text: string; sender: "user" | "agent"; time: string }>
   >([]);
 
-  const { data: agentData } = useAgentQuery({ id: agentId });
+  const {
+    data: agentData,
+    error: errorAgent,
+    isFetching: isFetchingAgent,
+  } = useAgentQuery({ id: agentId });
   const [startChatSession, startChatSessionResult] = useStartChatSessionMutation();
 
   useEffect(() => {
@@ -44,9 +49,24 @@ export default function ChatClient({ agentId }: ChatClientProps) {
 
   useEffect(() => {
     if (agentData) {
-      setSelectedAgent(agentData)
+      setSelectedAgent(agentData);
     }
   }, [agentData])
+
+  useEffect(() => {
+    if (errorAgent) {
+      if ( (errorAgent as any) ) {
+        if ((errorAgent as any)?.data) {
+          toasts.error(
+            "error",
+            (errorAgent as any)?.data?.message || "Error al cargar el agente."
+          );
+          router.push('/dashboard/agents');
+          return;
+        }
+      }
+    }
+  }, [errorAgent]);
 
   const handleSendMessage = () => {
     if (!chatMessage.trim() || !selectedAgent) return;
@@ -88,8 +108,24 @@ export default function ChatClient({ agentId }: ChatClientProps) {
             {chatMessages.length === 0 ? (
               <div className="text-center text-slate-700 py-8">
                 <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                {selectedAgent && (
+                {selectedAgent?.url && (
                   <p>Inicia una conversación con {selectedAgent.name}</p>
+                )}
+                {isFetchingAgent && (
+                  <div className="mt-3 w-full flex justify-center">
+                    <div className="w-full max-w-md p-4 rounded-xl bg-muted shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 bg-slate-600 rounded-full typing-dot" style={{ animationDelay: '0s' }} />
+                          <span className="w-2.5 h-2.5 bg-slate-600 rounded-full typing-dot" style={{ animationDelay: '0.12s' }} />
+                          <span className="w-2.5 h-2.5 bg-slate-600 rounded-full typing-dot" style={{ animationDelay: '0.24s' }} />
+                        </div>
+                        <div className="text-xs text-slate-700 opacity-85">
+                          Verificando agente... Por favor espera
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (
@@ -122,6 +158,7 @@ export default function ChatClient({ agentId }: ChatClientProps) {
             <Textarea
               required
               value={chatMessage}
+              disabled={isFetchingAgent}
               onChange={(e) => setChatMessage(e.target.value)}
               placeholder="Escribe tu mensaje..."
               rows={3}
@@ -134,7 +171,7 @@ export default function ChatClient({ agentId }: ChatClientProps) {
               }}
             />
           </div>
-          {!selectedAgent?.url && (
+          {!selectedAgent?.url || isFetchingAgent && (
             <Alert className="mt-2">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>Chat deshabilitado: LLM no configurado</AlertDescription>

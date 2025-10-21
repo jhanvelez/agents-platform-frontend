@@ -160,7 +160,7 @@ export default function LoginPage() {
                     >
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between text-base font-semibold">
-                          <span className="truncate">{session.name}</span>
+                          <span className="">{session.name}</span>
                           <Badge
                             variant={session.isActive ? "default" : "secondary"}
                             className={session.isActive ? "bg-green-600" : "bg-gray-500"}

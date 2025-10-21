@@ -250,8 +250,8 @@ export default function LandingPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={agent.isActive ? "default" : "secondary"}>
-                      {agent.isActive ? "Activo" : "Inactivo"}
+                    <Badge variant={agent.active ? "default" : "secondary"}>
+                      {agent.active ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -262,7 +262,7 @@ export default function LandingPage() {
                       <div className="pt-1">
                         <ToggleField
                           label="Estado"
-                          checked={agent.isActive}
+                          checked={agent.active}
                           onChange={(e) => {
                             toggleTenant({
                               id: agent.id

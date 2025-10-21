@@ -12,5 +12,5 @@ export interface Tenant {
   city: City;
   plan: Plan;
   monthlyTokenLimit: number;
-  isActive: boolean;
+  active: boolean;
 }

@@ -124,6 +124,7 @@ export default function LandingPage() {
     setCurrentAgent({
       ...agent,
       abilities: String(agent.abilities).split(',').slice(0, 2),
+
     });
     setIsDialogOpen(true);
   }
@@ -497,22 +498,12 @@ export default function LandingPage() {
                           }
                         })}
                         name="tenantId"
+                        value={values.tenantId}
                         onChange={(value: any) => {
                           setFieldValue("tenantId", value.value)
                         }}
                       />
                     </div>
-                    {/* 
-                    <div className="space-y-2">
-                      <Label htmlFor="detailsUrl">URL Detalles N8N</Label>
-                      <Input
-                        id="detailsUrl"
-                        value={formData.detailsUrl}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, detailsUrl: e.target.value }))}
-                        placeholder="https://n8n.example.com/webhook/details/..."
-                      />
-                    </div>
-                    */}
                   </div>
                 </div>
 
