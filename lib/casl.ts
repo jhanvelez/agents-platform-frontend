@@ -1,7 +1,7 @@
 import { Ability, AbilityBuilder } from "@casl/ability";
 
 export type Actions = "manage" | "read" | "create" | "update" | "delete";
-export type Subjects = "User" | "Agent" | "Dashboard" | "all" | "Model" | "Business" | "Plan" | "Conversation" | "Analytics" | "Monitoring" | "Roles" | "Settings" | "Settings";
+export type Subjects = "user" | "agents" | "Dashboard" | "all" | "Model" | "Business" | "plans" | "Conversation" | "Analytics" | "Monitoring" | "Roles" | "Settings" | "Settings";
 
 export type AppAbility = Ability<[Actions, Subjects]>;
 
