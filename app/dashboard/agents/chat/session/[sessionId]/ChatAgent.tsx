@@ -6,7 +6,9 @@ import {
   Bot,
   AlertTriangle,
   FileDown,
-} from "lucide-react"
+  ThumbsUp,
+  ThumbsDown,
+} from "lucide-react";
 
 import {
   Dialog,
@@ -31,6 +33,9 @@ import {
   useMessageChatSessionMutation,
   useExportChatSessionMutation,
 } from "@/store/chat/chat.api"
+import {
+  useFeedbackMessageMutation
+} from "@/store/chat/chat-message.api"
 
 // Type
 import { Agent } from '@/types/agent'
@@ -60,13 +65,24 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
 
   const [messageChatSession, messageChatSessionResult] = useMessageChatSessionMutation();
 
-  // Refrescar mensajes cuando llegan del backend
   useEffect(() => {
     if (messageChatSessionResult.isSuccess) {
       setLocalMessages([]);
       refetchMessages();
     }
   }, [messageChatSessionResult]);
+
+  const [feedbackMessage, feedbackMessageResult] = useFeedbackMessageMutation();
+
+  useEffect(() => {
+    if (feedbackMessageResult.isSuccess) {
+      toasts.success('Exito', 'Respuesta guardada.')
+      refetchMessages();
+    }
+    if (feedbackMessageResult.isError) {
+      toasts.success('Error', 'No se pudo guardar la respuesta.')
+    }
+  }, [feedbackMessageResult]);
 
   useEffect(() => {
     if (sessionData) {
@@ -82,6 +98,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       text: model.content ?? model.text,
       sender: model.role ?? model.sender,
       time: model.createdAt ?? model.time ?? new Date().toISOString(),
+      liked: model.liked
     }));
   }, [sessionData, localMessages]);
 
@@ -171,14 +188,41 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                   }`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
+                    className={`max-w-[80%] p-3 rounded-lg flex flex-col ${
                       message.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-white shadow-md"
                     }`}
                   >
                     <p className="text-sm">{message.text}</p>
                     <p className="text-xs opacity-70 mt-1">{formatTime(message.time)}</p>
+
+                    {message.sender === "agent" && (
+                      <div className="flex items-center gap-2 mt-2 self-start">
+                        <Button
+                          size="icon"
+                          variant={message.liked === true ? "default" : "outline"}
+                          className="h-7 w-7"
+                          onClick={() =>
+                            feedbackMessage({ messageId: message.id, liked: true })
+                          }
+                          disabled={feedbackMessageResult.isLoading}
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant={message.liked === false ? "default" : "outline"}
+                          className="h-7 w-7"
+                          onClick={() =>
+                            feedbackMessage({ messageId: message.id, liked: false })
+                          }
+                          disabled={feedbackMessageResult.isLoading}
+                        >
+                          <ThumbsDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -229,8 +273,6 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
           )}
         </Card>
       </div>
-
-
 
       {/* Modal Crear/Editar */}
       <Formik
@@ -292,7 +334,6 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
           );
         }}
       </Formik>
-
     </div>
   );
 }

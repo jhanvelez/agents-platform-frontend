@@ -9,3 +9,11 @@ export const exportChatInitialValues = {
 export const exportChatValidationSchema = Yup.object({
   email: Yup.string().email("Formato del email invalido").required(FIELD_REQUIRED_MESSAGE),
 });
+
+export const searchInChatSessionsInitialValues = {
+  query: "",
+};
+
+export const searchInChatSessionsValidationSchema = Yup.object({
+  query: Yup.string().required(FIELD_REQUIRED_MESSAGE),
+});

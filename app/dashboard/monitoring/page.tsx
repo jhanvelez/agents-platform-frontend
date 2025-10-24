@@ -8,11 +8,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Activity, Server, Zap, AlertTriangle, Clock, Database } from "lucide-react"
-import { RefreshCw } from "lucide-react"
+
+import {
+  Activity,
+  Server,
+  Zap,
+  AlertTriangle,
+  Clock,
+  Database,
+  Monitor,
+  RefreshCw,
+} from "lucide-react"
+
+// API
+import {
+  useSystemMetricsQuery
+} from '@/store/system/metrics.api'
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  const { data: systemMetricsData, refetch: refetchSystemMetrics } = useSystemMetricsQuery({ search: "" });
 
   return (
     <div className="space-y-6">
@@ -73,41 +90,59 @@ export default function LoginPage() {
         </Card>
 
         {/* Métricas del Sistema */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5" />
-              Métricas del Sistema
-            </CardTitle>
-            <CardDescription>Uso de recursos y rendimiento del servidor</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>CPU</span>
-                <span>45%</span>
+
+        {systemMetricsData ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Server className="h-5 w-5" />
+                Métricas del Sistema
+              </CardTitle>
+              <CardDescription>Uso de recursos y rendimiento del servidor</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>CPU</span>
+                  <span>{systemMetricsData.cpu}%</span>
+                </div>
+                <Progress value={systemMetricsData.cpu} className="h-2" />
               </div>
-              <Progress value={45} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>RAM</span>
-                <span>62%</span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>RAM</span>
+                  <span>{systemMetricsData.ram}%</span>
+                </div>
+                <Progress value={systemMetricsData.ram} className="h-2" />
               </div>
-              <Progress value={62} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Disco</span>
-                <span>28%</span>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Disco</span>
+                  <span>{systemMetricsData.disk}%</span>
+                </div>
+                <Progress value={systemMetricsData.disk} className="h-2" />
               </div>
-              <Progress value={28} className="h-2" />
-            </div>
-            <div className="text-xs text-muted-foreground mt-4">
-              🚧 Próximamente: Métricas en tiempo real del servidor
-            </div>
-          </CardContent>
-        </Card>
+              <div className="text-xs text-muted-foreground mt-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Monitor className="h-3.5 w-3.5" />
+                  <span>Máquina: {systemMetricsData.hostname}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>Tiempo: {systemMetricsData.uptime}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ):(
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-left">
+                No se encontro informacion sobre las metricas del sistemas
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        )}
 
         {/* Latencia API N8N */}
         <Card>

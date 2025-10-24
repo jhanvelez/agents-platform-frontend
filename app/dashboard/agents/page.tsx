@@ -1,7 +1,8 @@
 
 "use client";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react"
 
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -20,18 +21,30 @@ import {
   CalendarIcon,
   MessageSquareIcon,
 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
+import { Formik } from "formik";
 import { es } from "date-fns/locale"
-
 
 // API
 import {
   useAgentsPermittedAccessQuery
 } from "@/store/manage-agents/manage-agents.api"
-
 import {
-  useChatSessionsQuery
+  useChatSessionsQuery,
+  useSearchInChatSessionsQuery
 } from "@/store/chat/chat.api"
+
+// Schema
+import {
+  searchInChatSessionsInitialValues,
+  searchInChatSessionsValidationSchema,
+} from "@/shared/schemas/chat.schema"
 
 //Types
 import { Agent } from "@/types/agent"
@@ -40,9 +53,29 @@ import { ChatSession } from "@/types/chat-session"
 export default function LoginPage() {
   const router = useRouter();
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const { data: agentsData } = useAgentsPermittedAccessQuery({ });
 
   const { data: chatSessions } = useChatSessionsQuery({ search: "" });
+
+  const {
+    data: resultsChatSessions,
+    refetch: refetchSearchInChats,
+    isLoading: isLoadingChatSessions,
+  } = useSearchInChatSessionsQuery(
+    { query: searchQuery },
+    {
+      skip: searchQuery.trim().length <= 2,
+    }
+  );
+
+  const handleSearch = (values: { query: string }) => {
+    setSearchQuery(values.query);
+    refetchSearchInChats();
+    console.log("Buscando:", values.query);
+  }
 
   return (
     <div className="space-y-6">
@@ -141,9 +174,7 @@ export default function LoginPage() {
                 <Button
                   size="sm"
                   className="gap-1"
-                  onClick={() => {
-                    router.push(`/dashboard/agents/chat//688a4859-ec44-8002-9d25-aa1dbf6a790b`);
-                  }}
+                  onClick={() => setIsDialogOpen(true)}
                 >
                   <Search className="h-3 w-3" />
                   Busqueda
@@ -209,6 +240,82 @@ export default function LoginPage() {
           </Card>
         </div>
       </div>
+
+      <Formik
+        enableReinitialize
+        initialValues={searchInChatSessionsInitialValues}
+        validationSchema={searchInChatSessionsValidationSchema}
+        onSubmit={(values) => handleSearch(values)}
+      >
+        {({ handleSubmit, handleChange, values, errors }) => (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+              
+              {/* 🔹 Barra superior */}
+              <div className="p-4 border-b flex items-center gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="query" className="text-sm font-medium">Buscar en chats</Label>
+                  <Input
+                    id="query"
+                    name="query"
+                    placeholder="Escriba algo que recuerde de la conversación..."
+                    value={values.query}
+                    onChange={handleChange}
+                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                    error={!!errors.query}
+                    textError={errors.query}
+                  />
+                </div>
+                <Button onClick={() => handleSubmit} disabled={isLoadingChatSessions}>
+                  {isLoadingChatSessions ? "Buscando..." : "Buscar"}
+                </Button>
+              </div>
+
+              {/* 🔸 Resultados */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {isLoadingChatSessions ? (
+                  <p className="text-center text-sm text-gray-500">Buscando conversaciones...</p>
+                ) : !resultsChatSessions ? (
+                  <p className="text-center text-sm text-gray-500">
+                    Ingrese al menos 3 caracteres para iniciar la búsqueda.
+                  </p>
+                ) : resultsChatSessions.length === 0 ? (
+                  <p className="text-center text-sm text-gray-500">
+                    No se encontraron resultados para esta búsqueda.
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {resultsChatSessions.map((chat: any) => (
+                      <li
+                        key={chat.sessionId}
+                        onClick={() => router.push(`/chat/${chat.sessionId}`)}
+                        className="border rounded-lg p-3 cursor-pointer hover:bg-gray-100 transition"
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800">
+                              {chat.agent?.name || "Agente desconocido"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(chat.lastMessageTime).toLocaleString()}
+                            </p>
+                          </div>
+                          <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                            Sesión #{chat.sessionId.slice(0, 6)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-2 line-clamp-2">
+                          {chat.lastMessage}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </Formik>
     </div>
   );
 }

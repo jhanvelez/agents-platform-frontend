@@ -51,6 +51,17 @@ export const chatSessionApi = api
           body: { email },
         }),
       }),
+      SearchInChatSessions: builder.query({
+        query: ({ query }) => ({
+          url: `/search`,
+          method: RequestMethod.GET,
+          params: camelToSnake({
+            query,
+          }),
+        }),
+        providesTags: ["chat-sessions"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
+      }),
     }),
   });
 
@@ -60,4 +71,5 @@ export const {
   useMessageChatSessionMutation,
   useChatSessionsQuery,
   useExportChatSessionMutation,
+  useSearchInChatSessionsQuery,
 } = chatSessionApi;

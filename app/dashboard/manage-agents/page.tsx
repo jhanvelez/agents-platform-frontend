@@ -27,6 +27,7 @@ import {
 import {
   FileArchiveIcon,
   UsersIcon,
+  Badge as BadgeIcon,
   Plus, Edit, Bot,
   Search,
   Filter,
@@ -49,12 +50,19 @@ import {
 import {
   useTenantsQuery
 } from "@/store/business-managent/business-managent.api";
+import {
+  useAssignTokensMutation
+} from "@/store/manage-agents/tokens-agents.api";
 
 // Schemas
 import {
   agentsInitialValues,
   agentsValidationSchema,
 } from "@/shared/schemas/agents"
+import {
+  tokensUsageInitialValues,
+  tokensUsageValidationSchema,
+} from "@/shared/schemas/tokens-usage.schema";
 
 //Types
 import { Agent } from "@/types/agent"
@@ -73,8 +81,11 @@ const personalities = ["Profesional y empático", "Persuasivo y amigable", "Anal
 
 export default function LandingPage() {
   const router = useRouter();
+
+  const [agentId, setAgentId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogTokensOpen, setIsDialogTokensOpen] = useState(false);
 
   const { data: agentsData, refetch: refetchAgents } = useAgentsQuery({ search: "" });
   const { data: modelsIaData } = useModelsAssetsQuery({ search: "" });
@@ -176,6 +187,26 @@ export default function LandingPage() {
     console.log("Se hace el envio de los valores")
   }
 
+  const [assignTokens, assignTokensResult] = useAssignTokensMutation();
+
+  useEffect(() => {
+    if (assignTokensResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "Tokens asignados exitosamente."
+      );
+      setIsDialogTokensOpen(false);
+    }
+
+    if (assignTokensResult.error) {
+      toasts.error(
+        "Error",
+        "No se han podido asignar los tokens correctamente."
+      );
+      setIsDialogTokensOpen(false);
+    }
+  }, [assignTokensResult]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -251,6 +282,7 @@ export default function LandingPage() {
                 <TableHead>Habilidades</TableHead>
                 <TableHead>Data para entrenamiento</TableHead>
                 <TableHead>Usuarios</TableHead>
+                <TableHead>Asignar Tokens</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -297,6 +329,18 @@ export default function LandingPage() {
                       }}
                     >
                       <UsersIcon className="h-6 w-6" />
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 dark:bg-white/10 dark:text-white dark:ring-gray-700 dark:hover:bg-white/20"
+                      onClick={() => {
+                        setAgentId(agent.id);
+                        setIsDialogTokensOpen(true);
+                      }}
+                    >
+                      <BadgeIcon className="h-6 w-6" />
                     </Button>
                   </TableCell>
                   <TableCell>
@@ -521,6 +565,68 @@ export default function LandingPage() {
               </DialogContent>
             </Dialog>
           )
+        }}
+      </Formik>
+
+      {/* Modal Asignar tokens */}
+      <Formik
+        enableReinitialize
+        initialValues={tokensUsageInitialValues}
+        validationSchema={tokensUsageValidationSchema}
+        onSubmit={(values, formikHelopers) => {
+          assignTokens({
+            agentId: agentId,
+            tokensUsed: 0,
+            totalTokensAssigned: Number(values.tokens),
+          });
+          
+          formikHelopers.resetForm();
+          setIsDialogTokensOpen(false);
+        }}
+      >
+        {({ handleSubmit, errors, handleChange, setFieldValue, values }) => {
+          return (
+            <Dialog open={isDialogTokensOpen} onOpenChange={setIsDialogTokensOpen}>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Asignar toknes</DialogTitle>
+                  <DialogDescription>
+                    Ingrese la cantidad de tokens a asignar al agente.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Tokens *</Label>
+                      <Input
+                        id="tokens"
+                        name="tokens"
+                        type="number"
+                        value={values.tokens}
+                        onChange={handleChange}
+                        placeholder="Ejemplo: 1000"
+                        error={!!errors.tokens}
+                        textError={errors.tokens}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogTokensOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={!errors} onClick={() => {
+                    console.log(errors)
+                    handleSubmit();
+                  }}>
+                    Asignar Tokens
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          );
         }}
       </Formik>
     </div>

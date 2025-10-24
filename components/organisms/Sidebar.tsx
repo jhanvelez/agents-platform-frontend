@@ -75,7 +75,7 @@ export function Sidebar() {
           <div className="flex items-center">
             <div className="flex justify-center">
               <Image
-                src={Logo} 
+                src={Logo}
                 alt="ByBinary logo"
                 className="w-24"
               />
