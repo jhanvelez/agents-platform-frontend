@@ -48,10 +48,11 @@ export default function LoginPage() {
 
       {/* Estado Actual */}
       <Alert>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>En Desarrollo:</strong> Esta sección está siendo desarrollada e incluirá funcionalidades avanzadas de
-          monitoreo.
+        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        <AlertDescription className="text-sm leading-relaxed">
+          Esta sección forma parte del nuevo módulo de{" "}
+          <strong>Monitoreo Inteligente</strong>, donde podrás supervisar en tiempo real el
+          estado de tus agentes, el rendimiento del sistema, la latencia de las APIs y las alertas operativas.
         </AlertDescription>
       </Alert>
 

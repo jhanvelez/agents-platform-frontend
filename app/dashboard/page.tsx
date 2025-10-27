@@ -18,54 +18,13 @@ import {
 } from "recharts"
 import { Bot, Activity, MessageSquare, TrendingUp } from "lucide-react"
 import { useAuth } from '@/hooks/use-auth'
+import { useMemo } from "react";
 
-const kpiData = [
-  {
-    title: "Agentes Totales",
-    value: "12",
-    change: "+2 este mes",
-    icon: Bot,
-    color: "text-blue-600",
-  },
-  {
-    title: "Agentes Activos",
-    value: "8",
-    change: "66.7% activos",
-    icon: Activity,
-    color: "text-green-600",
-  },
-  {
-    title: "Consultas (Hoy)",
-    value: "247",
-    change: "+12% vs ayer",
-    icon: MessageSquare,
-    color: "text-purple-600",
-  },
-  {
-    title: "Tasa Éxito Global",
-    value: "94.2%",
-    change: "+2.1% esta semana",
-    icon: TrendingUp,
-    color: "text-orange-600",
-  },
-];
-
-const consultasData = [
-  { day: "Lun", consultas: 45 },
-  { day: "Mar", consultas: 52 },
-  { day: "Mié", consultas: 38 },
-  { day: "Jue", consultas: 61 },
-  { day: "Vie", consultas: 55 },
-  { day: "Sáb", consultas: 42 },
-  { day: "Dom", consultas: 35 },
-];
-
-const distribucionData = [
-  { name: "Agente Soporte", value: 35, fill: "#8884d8" },
-  { name: "Agente Ventas", value: 28, fill: "#82ca9d" },
-  { name: "Agente FAQ", value: 20, fill: "#ffc658" },
-  { name: "Agente Técnico", value: 17, fill: "#ff7300" },
-];
+// API
+import {
+  useMetricsQuery,
+} from '@/store/dashboard/dashboard.api';
+import { string } from "yup";
 
 const tasaExitoData = [
   { day: "Lun", tasa: 92 },
@@ -86,8 +45,65 @@ const tiempoRespuestaData = [
   { hour: "20", tiempo: 2.5 },
 ];
 
+interface chatDistributionProps {
+  fill: string;
+  name: string;
+  value: number;
+}
+
 export default function DashboardPage() {
   const { isAuthenticated } = useAuth();
+
+  const { data: DashboardMetricsData, refetch: refetchDashboardMetrics } = useMetricsQuery({ search: "" });
+
+  const kpiData = useMemo(() => {
+    if (!DashboardMetricsData) return [];
+
+    console.log(DashboardMetricsData.messages)
+
+    return [
+      {
+        title: "Agentes Totales",
+        value: DashboardMetricsData.agents.total,
+        change: `+${DashboardMetricsData.agents.growth} este mes`,
+        icon: Bot,
+        color: "text-blue-600",
+      },
+      {
+        title: "Agentes Activos",
+        value: DashboardMetricsData.agents.active,
+        change: `${DashboardMetricsData.agents.growth}% activos`,
+        icon: Activity,
+        color: "text-green-600",
+      },
+      {
+        title: "Consultas (Hoy)",
+        value: DashboardMetricsData.messages.today,
+        change: `${DashboardMetricsData.messages.growthPercent}% vs ayer - ${DashboardMetricsData.messages.growthText}`,
+        icon: MessageSquare,
+        color: "text-purple-600",
+      },
+      {
+        title: "Tasa Éxito Global",
+        value: "94.2%",
+        change: "+2.1% esta semana",
+        icon: TrendingUp,
+        color: "text-orange-600",
+      },
+    ]
+  }, [DashboardMetricsData]);
+
+  const consultasData = useMemo(() => {
+    if (!DashboardMetricsData) return [];
+
+    return DashboardMetricsData.chatWeeklyMetrics;
+  }, [DashboardMetricsData]);
+
+  const distribucionData: chatDistributionProps[] = useMemo(() => {
+    if (!DashboardMetricsData) return [];
+
+    return DashboardMetricsData.chatDistribution;
+  }, [DashboardMetricsData]);
 
   return (
     <div className="space-y-6">
