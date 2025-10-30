@@ -62,6 +62,27 @@ export const chatSessionApi = api
         providesTags: ["chat-sessions"],
         transformResponse: (response: any) => snakeToCamel(response.data),
       }),
+      chatAgentConversations: builder.query({
+        query: ({ agentId }) => ({
+          url: `/chat/agent/${agentId}/conversations`,
+          method: RequestMethod.GET,
+        }),
+        providesTags: ["chat-sessions"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
+      }),
+      chatAgentAnalytics: builder.query({
+        query: ({ agentId, startDate, endDate }) => ({
+          url: `/chat/analytics`,
+          method: RequestMethod.GET,
+          params: camelToSnake({
+            agentId,
+            startDate,
+            endDate,
+          }),
+        }),
+        providesTags: ["chat-sessions"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
+      }),
     }),
   });
 
@@ -72,4 +93,6 @@ export const {
   useChatSessionsQuery,
   useExportChatSessionMutation,
   useSearchInChatSessionsQuery,
+  useChatAgentConversationsQuery,
+  useChatAgentAnalyticsQuery,
 } = chatSessionApi;

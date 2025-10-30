@@ -1,17 +1,49 @@
 
 "use client";
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation";
+import { skipToken } from "@reduxjs/toolkit/query";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Search, Filter, MessageSquare, RefreshCw } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import {
+  CalendarIcon,
+  Search,
+  Filter,
+  MessageSquare,
+  RefreshCw,
+} from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -25,119 +57,99 @@ interface Conversation {
   date: string
 }
 
-const mockConversations: Conversation[] = [
-  {
-    id: "SESS-001",
-    agent: "Agente Soporte",
-    question: "¿Cómo puedo resetear mi contraseña?",
-    response: "Para resetear tu contraseña, ve a la página de login y haz clic en 'Olvidé mi contraseña'...",
-    duration: 2.3,
-    success: true,
-    date: "2024-01-15 10:30:15",
-  },
-  {
-    id: "SESS-002",
-    agent: "Agente Ventas",
-    question: "¿Cuáles son los precios de sus planes?",
-    response: "Tenemos tres planes disponibles: Básico ($29/mes), Pro ($79/mes) y Enterprise ($199/mes)...",
-    duration: 1.8,
-    success: true,
-    date: "2024-01-15 09:15:22",
-  },
-  {
-    id: "SESS-003",
-    agent: "Agente FAQ",
-    question: "¿Tienen soporte 24/7?",
-    response: "Lo siento, no pude encontrar información específica sobre nuestro horario de soporte...",
-    duration: 4.1,
-    success: false,
-    date: "2024-01-14 16:45:33",
-  },
-  {
-    id: "SESS-004",
-    agent: "Agente Soporte",
-    question: "Mi aplicación no se conecta a internet",
-    response:
-      "Vamos a revisar tu configuración de red. Primero, verifica que tu conexión a internet esté funcionando...",
-    duration: 3.2,
-    success: true,
-    date: "2024-01-14 14:20:10",
-  },
-  {
-    id: "SESS-005",
-    agent: "Agente Ventas",
-    question: "¿Ofrecen descuentos para estudiantes?",
-    response: "Sí, ofrecemos un 50% de descuento para estudiantes con identificación válida...",
-    duration: 1.5,
-    success: true,
-    date: "2024-01-13 11:30:45",
-  },
-]
-
-const agents = ["Todos", "Agente Soporte", "Agente Ventas", "Agente FAQ"]
 const resultOptions = ["Todos", "Exitoso", "Fallido"]
 
 import type { DateRange } from "react-day-picker"
 
+// API
+import {
+  useAgentsQuery
+} from "@/store/manage-agents/manage-agents.api"
+import {
+  useChatAgentConversationsQuery
+} from "@/store/chat/chat.api"
+
+// Type
+import { Agent } from "@/types/agent"
 
 export default function LoginPage() {
   const router = useRouter();
 
-    const [conversations] = useState<Conversation[]>(mockConversations)
-    const [filteredConversations, setFilteredConversations] = useState<Conversation[]>(mockConversations)
-    const [selectedAgent, setSelectedAgent] = useState("Todos")
-    const [selectedResult, setSelectedResult] = useState("Todos")
-  
-    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
-    const [searchTerm, setSearchTerm] = useState("")
-    const [currentPage, setCurrentPage] = useState(1)
-    const itemsPerPage = 10
-  
-    const applyFilters = () => {
-      let filtered = conversations
-  
-      if (selectedAgent !== "Todos") {
-        filtered = filtered.filter((conv) => conv.agent === selectedAgent)
-      }
-  
-      if (selectedResult !== "Todos") {
-        const isSuccess = selectedResult === "Exitoso"
-        filtered = filtered.filter((conv) => conv.success === isSuccess)
-      }
-  
-      if (searchTerm) {
-        filtered = filtered.filter(
-          (conv) =>
-            conv.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            conv.response.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            conv.id.toLowerCase().includes(searchTerm.toLowerCase()),
-        )
-      }
-  
-      if (dateRange?.from) {
-        filtered = filtered.filter((conv) => {
-          const convDate = new Date(conv.date)
-          return convDate >= dateRange.from!
-        })
-      }
-  
-      if (dateRange?.to) {
-        filtered = filtered.filter((conv) => {
-          const convDate = new Date(conv.date)
-          return convDate <= dateRange.to!
-        })
-      }
-  
-      setFilteredConversations(filtered)
-      setCurrentPage(1)
+  const [conversations] = useState<Conversation[]>();
+  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>();
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedResult, setSelectedResult] = useState("Todos")
+
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  const { data: agentsData } = useAgentsQuery({ search: "" });
+
+  const agents = useMemo(() => {
+    if (!agentsData) return [];
+
+    return agentsData.map((agent: Agent) => {
+      return {
+        id: agent.id,
+        name: agent.name
+      };
+    });
+  }, [agentsData]);
+
+
+  const {
+    data: agentConversations,
+    refetch: refetchSearchInChats,
+    isLoading: isLoadingAgentConversations,
+  } = useChatAgentConversationsQuery(
+    selectedAgent ? { agentId: selectedAgent.id } : skipToken
+  );
+
+  useEffect(() => {
+    if (agentConversations) {
+      setFilteredConversations(agentConversations);
     }
+  }, [agentConversations]);
+
+  const applyFilters = () => {
+    if (!conversations) return [];
+    let filtered = conversations
+
+    if (selectedResult !== "Todos") {
+      const isSuccess = selectedResult === "Exitoso"
+      filtered = filtered.filter((conv) => conv.success === isSuccess)
+    }
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (conv) =>
+          conv.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          conv.response.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          conv.id.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    if (dateRange?.from) {
+      filtered = filtered.filter((conv) => {
+        const convDate = new Date(conv.date)
+        return convDate >= dateRange.from!
+      })
+    }
+
+    if (dateRange?.to) {
+      filtered = filtered.filter((conv) => {
+        const convDate = new Date(conv.date)
+        return convDate <= dateRange.to!
+      })
+    }
+
+    setFilteredConversations(filtered)
+    setCurrentPage(1)
+  }
   
-    const paginatedConversations = filteredConversations.slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage,
-    )
-  
-    const totalPages = Math.ceil(filteredConversations.length / itemsPerPage)
+  const totalPages = filteredConversations ? Math.ceil(filteredConversations.length / itemsPerPage) : 0;
 
   return (
     <div className="space-y-6">
@@ -179,14 +191,16 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Filtrar por Agente</label>
-              <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <Select value={selectedAgent ? selectedAgent.id : ""} onValueChange={(value) => {
+                setSelectedAgent(agents.filter((agent: Agent) => agent.id == value)[0]);
+              }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {agents.map((agent) => (
-                    <SelectItem key={agent} value={agent}>
-                      {agent}
+                  {agents.map((agent: Agent) => (
+                    <SelectItem key={agent.id} value={agent.id}>
+                      {agent.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -210,12 +224,16 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Rango de Fechas</label>
+              <Label className="text-sm font-medium">Rango de Fechas</Label>
+
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal bg-transparent">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal bg-transparent"
+                  >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange && dateRange.from ? (
+                    {dateRange?.from ? (
                       dateRange.to ? (
                         <>
                           {format(dateRange.from, "dd/MM/yyyy", { locale: es })} -{" "}
@@ -225,11 +243,16 @@ export default function LoginPage() {
                         format(dateRange.from, "dd/MM/yyyy", { locale: es })
                       )
                     ) : (
-                      "Seleccionar fechas"
+                      <span className="text-muted-foreground">Seleccionar fechas</span>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+
+                <PopoverContent
+                  className="w-auto p-2 mt-2 bg-white border rounded-xl shadow-xl z-[9999]"
+                  align="start"
+                  sideOffset={4}
+                >
                   <Calendar
                     initialFocus
                     mode="range"
@@ -237,6 +260,7 @@ export default function LoginPage() {
                     selected={dateRange}
                     onSelect={setDateRange}
                     numberOfMonths={2}
+                    className="rounded-md"
                   />
                 </PopoverContent>
               </Popover>
@@ -265,7 +289,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Conversaciones ({filteredConversations.length})
+            Conversaciones ({filteredConversations ? filteredConversations.length : 0})
           </CardTitle>
           <CardDescription>Lista paginada de todas las consultas procesadas</CardDescription>
         </CardHeader>
@@ -283,7 +307,7 @@ export default function LoginPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedConversations.map((conversation) => (
+              {agentConversations && agentConversations.map((conversation: Conversation) => (
                 <TableRow key={conversation.id}>
                   <TableCell className="font-mono text-sm">{conversation.id}</TableCell>
                   <TableCell>
@@ -322,7 +346,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-muted-foreground">
                 Mostrando {(currentPage - 1) * itemsPerPage + 1} a{" "}
-                {Math.min(currentPage * itemsPerPage, filteredConversations.length)} de {filteredConversations.length}{" "}
+                {Math.min(currentPage * itemsPerPage, filteredConversations ? filteredConversations.length : 0)} de {filteredConversations ? filteredConversations.length : 0}{" "}
                 conversaciones
               </div>
               <div className="flex gap-2">

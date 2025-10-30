@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 import {
   RefreshCw,
@@ -71,49 +72,85 @@ const tiemposRespuesta = [
   { hora: "22-00", promedio: 1.4, maximo: 2.6 },
 ];
 
-const agents = ["Todos", "Agente Soporte", "Agente Ventas", "Agente FAQ", "Agente Técnico"]
+// API
+import {
+  useAgentsQuery
+} from "@/store/manage-agents/manage-agents.api"
+import {
+  useChatAgentAnalyticsQuery
+} from "@/store/chat/chat.api"
+
+// Type
+import { Agent } from "@/types/agent"
 
 import type { DateRange } from "react-day-picker"
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const [selectedAgent, setSelectedAgent] = useState("Todos")
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(),
     to: undefined,
   })
 
-  const kpiCards = [
-    {
-      title: "Total Consultas",
-      value: "370",
-      change: "+8.2% vs período anterior",
-      icon: BarChart3,
-      color: "text-blue-600",
-    },
-    {
-      title: "Tasa de Éxito",
-      value: "92.4%",
-      change: "+1.8% vs período anterior",
-      icon: CheckCircle,
-      color: "text-green-600",
-    },
-    {
-      title: "Consultas Fallidas",
-      value: "28",
-      change: "-12% vs período anterior",
-      icon: XCircle,
-      color: "text-red-600",
-    },
-    {
-      title: "Tiempo Promedio",
-      value: "2.1s",
-      change: "-0.3s vs período anterior",
-      icon: Clock,
-      color: "text-orange-600",
-    },
-  ] 
+  const { data: agentsData } = useAgentsQuery({ search: "" });
+
+  const agents = useMemo(() => {
+    if (!agentsData) return [];
+
+    return agentsData.map((agent: Agent) => {
+      return {
+        id: agent.id,
+        name: agent.name
+      };
+    });
+  }, [agentsData]);
+
+  const {
+    data: chatsAgentAnalytics,
+    refetch: refetchSearchInChats,
+    isLoading: isLoadingAgentConversations,
+  } = useChatAgentAnalyticsQuery(
+    selectedAgent ? { agentId: selectedAgent.id } : skipToken
+  );
+
+  const kpiCards = useMemo(() => {
+    if (!chatsAgentAnalytics) return [];
+
+    console.log(chatsAgentAnalytics)
+
+    return [
+      {
+        title: "Total Consultas",
+        value: "370",
+        change: "+8.2% vs período anterior",
+        icon: BarChart3,
+        color: "text-blue-600",
+      },
+      {
+        title: "Tasa de Éxito",
+        value: "92.4%",
+        change: "+1.8% vs período anterior",
+        icon: CheckCircle,
+        color: "text-green-600",
+      },
+      {
+        title: "Consultas Fallidas",
+        value: "28",
+        change: "-12% vs período anterior",
+        icon: XCircle,
+        color: "text-red-600",
+      },
+      {
+        title: "Tiempo Promedio",
+        value: "2.1s",
+        change: "-0.3s vs período anterior",
+        icon: Clock,
+        color: "text-orange-600",
+      },
+    ]
+  }, [chatsAgentAnalytics]);
 
   return (
     <div className="space-y-6">
@@ -139,14 +176,16 @@ export default function LoginPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <label className="text-sm font-medium">Filtrar por Agente</label>
-              <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <Select value={selectedAgent ? selectedAgent.id : ""} onValueChange={(value) => {
+                setSelectedAgent(agents.filter((agent: Agent) => agent.id == value)[0]);
+              }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {agents.map((agent) => (
-                    <SelectItem key={agent} value={agent}>
-                      {agent}
+                  {agents.map((agent: Agent) => (
+                    <SelectItem key={agent.id} value={agent.id}>
+                      {agent.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
