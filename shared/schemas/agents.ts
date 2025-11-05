@@ -19,7 +19,11 @@ export const agentsValidationSchema = Yup.object({
   modelId: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   code: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   url: Yup.string().required(FIELD_REQUIRED_MESSAGE),
-  tenantId: Yup.string().required(FIELD_REQUIRED_MESSAGE),
+  tenantId: Yup.string().when("isSuperAdmin", {
+    is: true,
+    then: (schema) => schema.required(FIELD_REQUIRED_MESSAGE),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   monthlyTokenLimit: Yup.number().required(FIELD_REQUIRED_MESSAGE),
   description: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   abilities: Yup.array().required(FIELD_REQUIRED_MESSAGE),

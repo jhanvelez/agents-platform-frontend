@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge"
 
 import { Formik } from "formik";
 
+import { useAbility } from "@/providers/AbilityProvider";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import SelectSearch from "@/components/ui/SelectSearch"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -81,6 +83,7 @@ const personalities = ["Profesional y empático", "Persuasivo y amigable", "Anal
 
 export default function LandingPage() {
   const router = useRouter();
+  const ability = useAbility();
 
   const [monthlyTokenLimit, setMonthlyTokenLimit] = useState<number>(0);
 
@@ -377,7 +380,11 @@ export default function LandingPage() {
       {/* Modal Crear/Editar */}
       <Formik
         enableReinitialize
-        initialValues={currentAgent ?? agentsInitialValues}
+          initialValues={{
+          ...agentsInitialValues,
+          ...currentAgent,
+          isSuperAdmin: ability.can("read", "business"),
+        }}
         validationSchema={agentsValidationSchema}
         onSubmit={(values, formikHelopers) => {
           if (currentAgent) {
@@ -485,8 +492,6 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  
-
                   <div className="space-y-2">
                     <Label htmlFor="description">Descripción</Label>
                     <Textarea
@@ -537,22 +542,24 @@ export default function LandingPage() {
                         placeholder="https://ia.bybinary.com/webhook/chat/..."
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tenantId">Empresa</Label>
-                      <SelectSearch
-                        colourOptions={atentsData && atentsData.map((dep: Tenant) => {
-                          return {
-                            value: dep.id,
-                            label: dep.name,
-                          }
-                        })}
-                        name="tenantId"
-                        value={values.tenantId}
-                        onChange={(value: any) => {
-                          setFieldValue("tenantId", value.value)
-                        }}
-                      />
-                    </div>
+                    {ability.can("read", "business") && (
+                      <div className="space-y-2">
+                        <Label htmlFor="tenantId">Empresa</Label>
+                        <SelectSearch
+                          colourOptions={atentsData && atentsData.map((dep: Tenant) => {
+                            return {
+                              value: dep.id,
+                              label: dep.name,
+                            }
+                          })}
+                          name="tenantId"
+                          value={values.tenantId}
+                          onChange={(value: any) => {
+                            setFieldValue("tenantId", value.value)
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
