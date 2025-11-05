@@ -63,9 +63,12 @@ export const chatSessionApi = api
         transformResponse: (response: any) => snakeToCamel(response.data),
       }),
       chatAgentConversations: builder.query({
-        query: ({ agentId }) => ({
+        query: ({ agentId, search }) => ({
           url: `/chat/agent/${agentId}/conversations`,
           method: RequestMethod.GET,
+          params: camelToSnake({
+            search,
+          }),
         }),
         providesTags: ["chat-sessions"],
         transformResponse: (response: any) => snakeToCamel(response.data),

@@ -59,7 +59,6 @@ export default function LandingPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [municipalities, setMunicipalities] = useState<City[]>([]);
 
   // API hooks
@@ -327,9 +326,9 @@ export default function LandingPage() {
             >
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingAgent ? "Editar Agente" : "Crear nueva empresa"}</DialogTitle>
+                  <DialogTitle>{currentTenant ? "Editar Agente" : "Crear nueva empresa"}</DialogTitle>
                   <DialogDescription>
-                    {editingAgent
+                    {currentTenant
                       ? "Edita los detalles de la empresa"
                       : "Completa los detalles de la nueva empresa"}
                   </DialogDescription>

@@ -70,6 +70,16 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       setLocalMessages([]);
       refetchMessages();
     }
+
+    if (messageChatSessionResult.isError) {
+      if ((messageChatSessionResult.error as any)?.data?.message) {
+        toasts.error(
+          "error",
+          (messageChatSessionResult.error as any)?.data?.message
+        )
+        return;
+      }
+    }
   }, [messageChatSessionResult]);
 
   const [feedbackMessage, feedbackMessageResult] = useFeedbackMessageMutation();
@@ -245,23 +255,36 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
         <Card
           className="p-4 border border-white/20  bg-white/30 backdrop-blur-md shadow-lg rounded-2xl"
         >
-          <div className="flex items-end gap-3">
-            <Textarea
-              required
-              value={chatMessage}
-              onChange={(e) => setChatMessage(e.target.value)}
-              placeholder="Escribe tu mensaje..."
-              rows={2}
-              className="flex-1 resize-none rounded-xl border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              disabled={messageChatSessionResult.isLoading}
-            />
-          </div>
+          {selectedAgent ? (
+            <>
+              <div className="flex items-end gap-3">
+                <Textarea
+                  required
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder="Escribe tu mensaje..."
+                  rows={2}
+                  className="flex-1 resize-none rounded-xl border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  disabled={messageChatSessionResult.isLoading || (selectedAgent.monthlyTokenLimit == 0)}
+                />
+              </div>
+
+              {selectedAgent.monthlyTokenLimit == 0 && (
+                <Alert className="mt-3 rounded-xl">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Límite mensual de tokens excedido.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </>
+          ): null}
 
           {!selectedAgent?.url && (
             <Alert className="mt-3 rounded-xl">

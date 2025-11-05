@@ -104,7 +104,7 @@ export default function LoginPage() {
     refetch: refetchSearchInChats,
     isLoading: isLoadingAgentConversations,
   } = useChatAgentConversationsQuery(
-    selectedAgent ? { agentId: selectedAgent.id } : skipToken
+    selectedAgent ? { agentId: selectedAgent.id, search: searchTerm } : skipToken
   );
 
   useEffect(() => {

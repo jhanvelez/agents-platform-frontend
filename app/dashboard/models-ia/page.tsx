@@ -34,6 +34,7 @@ import {
 import {
   useModelsQuery,
   useStoreModelMutation,
+  useUpdateModelMutation,
   useToggleModelStatusMutation,
 } from "@/store/models-ia/models-ia.api";
 
@@ -42,14 +43,13 @@ import { ModelIA } from "@/types/models-ia"
 
 export default function LandingPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<ModelIA | null>(null);
 
   // API hooks
   const { data: modelsData, refetch: refetchModels } = useModelsQuery({ search: "" });
 
-  const [storeAtent, storeAtentResult] = useStoreModelMutation();
+  const [storeModelIa, storeModelIaResult] = useStoreModelMutation();
   useEffect(() => {
-    if (storeAtentResult.isSuccess) {
+    if (storeModelIaResult.isSuccess) {
       toasts.success(
         "Exito",
         "El modelo se ha registrado exitosamente."
@@ -59,7 +59,7 @@ export default function LandingPage() {
       setIsDialogOpen(false);
     }
 
-    if (storeAtentResult.error) {
+    if (storeModelIaResult.error) {
       toasts.error(
         "Error",
         "El modelo no se ha registrado."
@@ -67,7 +67,31 @@ export default function LandingPage() {
 
       setIsDialogOpen(false);
     }
-  }, [storeAtentResult]);
+  }, [storeModelIaResult]);
+
+
+  const [updateModelIa, updateModelIaResult] = useUpdateModelMutation();
+  useEffect(() => {
+    if (updateModelIaResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "El modelo se ha actualizado exitosamente."
+      );
+
+      refetchModels();
+      setIsDialogOpen(false);
+      setCurrentModelIa(null);
+    }
+
+    if (updateModelIaResult.error) {
+      toasts.error(
+        "Error",
+        "El modelo no se ha actualizado."
+      );
+
+      setIsDialogOpen(false);
+    }
+  }, [updateModelIaResult]);
 
     const [toggleMoelIa, toggleMoelIaResult] = useToggleModelStatusMutation();
     useEffect(() => {
@@ -88,9 +112,9 @@ export default function LandingPage() {
     }
   }, [toggleMoelIaResult]);
 
-  const [currentTenant, setCurrentTenant] = useState<ModelIA>();
+  const [currentModelIa, setCurrentModelIa] = useState<ModelIA | null>(null);
   const handleEdit = (agent: ModelIA) => {
-    setCurrentTenant(agent);
+    setCurrentModelIa(agent);
     setIsDialogOpen(true);
   }
 
@@ -104,7 +128,10 @@ export default function LandingPage() {
             Aquí puedes gestionar todas los models. Crea, edita o elimina modelos ia según sea necesario.
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+        <Button onClick={() => {
+          setIsDialogOpen(true);
+          setCurrentModelIa(null);
+        }} className="gap-2">
           <Plus className="h-4 w-4" />
           Modelo IA
         </Button>
@@ -177,10 +204,17 @@ export default function LandingPage() {
       {/* Modal Crear/Editar */}
       <Formik
         enableReinitialize
-        initialValues={currentTenant ?? modelsInitialValues}
+        initialValues={currentModelIa ?? modelsInitialValues}
         validationSchema={modelsValidationSchema}
         onSubmit={(values, formikHelopers) => {
-          storeAtent(values);
+          if (currentModelIa) {
+            updateModelIa({
+              id: currentModelIa.id,
+              modelData: values,
+            });
+          }else{
+            storeModelIa(values);
+          }
           formikHelopers.resetForm();
           setIsDialogOpen(false);
         }}
@@ -190,9 +224,9 @@ export default function LandingPage() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingAgent ? "Editar Modelo IA" : "Crear Modelo IA"}</DialogTitle>
+                  <DialogTitle>{currentModelIa ? "Editar Modelo IA" : "Crear Modelo IA"}</DialogTitle>
                   <DialogDescription>
-                    {editingAgent
+                    {currentModelIa
                       ? "Edita los detalles del modelo"
                       : "Completa los detalles del nuevo modelo"}
                   </DialogDescription>
@@ -266,7 +300,7 @@ export default function LandingPage() {
                     console.log(errors)
                     handleSubmit();
                   }}>
-                    {editingAgent ? "Actualizar" : "Crear"}
+                    {currentModelIa ? "Actualizar" : "Crear"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

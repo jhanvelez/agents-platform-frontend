@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react"
+import { use, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -81,6 +81,10 @@ const personalities = ["Profesional y empático", "Persuasivo y amigable", "Anal
 
 export default function LandingPage() {
   const router = useRouter();
+
+  const [monthlyTokenLimit, setMonthlyTokenLimit] = useState<number>(0);
+
+  const [maxLimit, setMaxLimit] = useState<number>(0);
 
   const [agentId, setAgentId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -337,6 +341,8 @@ export default function LandingPage() {
                       className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 dark:bg-white/10 dark:text-white dark:ring-gray-700 dark:hover:bg-white/20"
                       onClick={() => {
                         setAgentId(agent.id);
+                        setMaxLimit(agent.tenant.plan.monthlyTokenLimit);
+                        setMonthlyTokenLimit(agent.monthlyTokenLimit);
                         setIsDialogTokensOpen(true);
                       }}
                     >
@@ -571,7 +577,9 @@ export default function LandingPage() {
       {/* Modal Asignar tokens */}
       <Formik
         enableReinitialize
-        initialValues={tokensUsageInitialValues}
+        initialValues={{
+          tokens: monthlyTokenLimit
+        }}
         validationSchema={tokensUsageValidationSchema}
         onSubmit={(values, formikHelopers) => {
           assignTokens({
@@ -585,6 +593,7 @@ export default function LandingPage() {
         }}
       >
         {({ handleSubmit, errors, handleChange, setFieldValue, values }) => {
+
           return (
             <Dialog open={isDialogTokensOpen} onOpenChange={setIsDialogTokensOpen}>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -609,6 +618,12 @@ export default function LandingPage() {
                         error={!!errors.tokens}
                         textError={errors.tokens}
                       />
+                      {values.tokens > maxLimit && (
+                        <p className="text-red-600 font-medium mt-2">
+                          El valor ingresado supera el límite mensual permitido por el plan.  
+                          El máximo permitido es <span className="font-semibold">{maxLimit.toLocaleString()}</span> tokens.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -617,10 +632,14 @@ export default function LandingPage() {
                   <Button variant="outline" onClick={() => setIsDialogTokensOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type="submit" disabled={!errors} onClick={() => {
-                    console.log(errors)
-                    handleSubmit();
-                  }}>
+                  <Button
+                    type="submit"
+                    disabled={!errors || (values.tokens > maxLimit)}
+                    onClick={() => {
+                      console.log(errors)
+                      handleSubmit();
+                    }}
+                  >
                     Asignar Tokens
                   </Button>
                 </DialogFooter>

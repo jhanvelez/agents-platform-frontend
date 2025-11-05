@@ -1,7 +1,7 @@
 import { Ability, AbilityBuilder } from "@casl/ability";
 
 export type Actions = "manage" | "read" | "create" | "update" | "delete";
-export type Subjects = "user" | "agents" | "Dashboard" | "all" | "Model" | "Business" | "plans" | "Conversation" | "Analytics" | "Monitoring" | "Roles" | "Settings" | "Settings";
+export type Subjects = "user" | "agents" | "dashboard" | "all" | "model" | "business" | "plans" | "conversation" | "analytics" | "monitoring" | "roles" | "settings" | "settings" | "manage-agents" | "profile";
 
 export type AppAbility = Ability<[Actions, Subjects]>;
 
@@ -14,6 +14,9 @@ export function defineAbilityFor(role: string, permissions: string[]) {
     permissions.forEach((perm) => {
       const [action, subject] = perm.split(":") as [Actions, Subjects];
       if (action && subject) {
+
+        console.log("Se asigna el permiso: ", action, subject)
+
         can(action, subject);
       }
     });

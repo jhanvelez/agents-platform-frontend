@@ -11,11 +11,8 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
 
   function mapPermissions(apiPermissions: { action: string; subject: string }[]) {
     return apiPermissions.map((p) => {
-      // El backend manda "user.read", lo separamos
       const [subject, action] = p.action.split(".");
-      // Capitalizamos el subject para que encaje con CASL (User, Role, etc.)
-      const formattedSubject =
-        subject.charAt(0).toUpperCase() + subject.slice(1).toLowerCase();
+      const formattedSubject = subject.charAt(0) + subject.slice(1);
 
       return `${action}:${formattedSubject}`;
     });

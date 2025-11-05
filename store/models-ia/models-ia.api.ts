@@ -40,10 +40,10 @@ export const modelsApi = api
       }),
       updateModel: builder.mutation({
         invalidatesTags: ["model"],
-        query: ({ id, ...payload }: any) => ({
+        query: ({ id, modelData }: any) => ({
           url: `/models-ia/${id}`,
           method: RequestMethod.PUT,
-          body: snakeToCamel(payload),
+          body: modelData,
         }),
       }),
       toggleModelStatus: builder.mutation({

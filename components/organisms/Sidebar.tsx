@@ -42,19 +42,19 @@ export interface MenuItem {
 }
 
 export const menuItems: MenuItem[] = [
-  { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard", ability: { action: "read", subject: "Dashboard" } },
+  { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard", ability: { action: "read", subject: "dashboard" } },
   { id: "agents", label: "Agentes IA", icon: Bot, path: "/dashboard/agents", ability: { action: "read", subject: "agents" } },
-  { id: "manage-agents", label: "Gestión Agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents", ability: { action: "manage", subject: "agents" } },
-  { id: "models-ia", label: "Modelos IA", icon: Brain, path: "/dashboard/models-ia", ability: { action: "read", subject: "Model" } },
-  { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management", ability: { action: "manage", subject: "Business" } },
+  { id: "manage-agents", label: "Gestión agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents", ability: { action: "manage", subject: "manage-agents" } },
+  { id: "models-ia", label: "Modelos IA", icon: Brain, path: "/dashboard/models-ia", ability: { action: "read", subject: "model" } },
+  { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management", ability: { action: "manage", subject: "business" } },
   { id: "plans", label: "Planes", icon: SparklesIcon, path: "/dashboard/plans", ability: { action: "read", subject: "plans" } },
-  { id: "conversations", label: "Historial Conversaciones", icon: MessageSquare, path: "/dashboard/conversations", ability: { action: "read", subject: "Conversation" } },
-  { id: "analytics", label: "Análisis Consultas", icon: BarChart3, path: "/dashboard/analytics", ability: { action: "read", subject: "Analytics" } },
-  { id: "monitoring", label: "Monitoreo", icon: Activity, path: "/dashboard/monitoring", ability: { action: "read", subject: "Monitoring" } },
-  { id: "users", label: "Gestión Usuarios", icon: Users, path: "/dashboard/users", ability: { action: "read", subject: "user" } },
-  { id: "roles", label: "Roles", icon: Shield, path: "/dashboard/roles", ability: { action: "read", subject: "Roles" } },
-  { id: "settings", label: "Configuración", icon: SettingsIcon, path: "/dashboard/settings", ability: { action: "update", subject: "Settings" } },
-  { id: "profile", label: "Mi Perfil", icon: User, path: "/dashboard/profile", ability: { action: "read", subject: "Settings" } },
+  { id: "conversations", label: "Historial conversaciones", icon: MessageSquare, path: "/dashboard/conversations", ability: { action: "read", subject: "conversation" } },
+  { id: "analytics", label: "Análisis consultas", icon: BarChart3, path: "/dashboard/analytics", ability: { action: "read", subject: "analytics" } },
+  { id: "monitoring", label: "Monitoreo", icon: Activity, path: "/dashboard/monitoring", ability: { action: "read", subject: "monitoring" } },
+  { id: "users", label: "Gestión usuarios", icon: Users, path: "/dashboard/users", ability: { action: "read", subject: "user" } },
+  { id: "roles", label: "Gestión roles", icon: Shield, path: "/dashboard/roles", ability: { action: "read", subject: "roles" } },
+  { id: "settings", label: "Configuración", icon: SettingsIcon, path: "/dashboard/settings", ability: { action: "update", subject: "settings" } },
+  { id: "profile", label: "Mi perfil", icon: User, path: "/dashboard/profile", ability: { action: "read", subject: "profile" } },
 ];
 
 export function Sidebar() {
@@ -86,6 +86,13 @@ export function Sidebar() {
         <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
+      </div>
+
+      <div>
+        {
+          // ability.can("read", item.ability.subject) 
+        }
+
       </div>
 
       {/* Menú */}
