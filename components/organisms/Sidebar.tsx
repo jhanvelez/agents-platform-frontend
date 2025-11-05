@@ -74,7 +74,6 @@ export function Sidebar() {
     waitForAbility();
   }, [ability]);
 
-  // Mientras se cargan los permisos, muestra un loader elegante
   if (isLoading) {
     return (
       <div className="flex h-screen w-64 items-center justify-center bg-primary/5 text-gray-600">

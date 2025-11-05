@@ -14,9 +14,6 @@ export function defineAbilityFor(role: string, permissions: string[]) {
     permissions.forEach((perm) => {
       const [action, subject] = perm.split(":") as [Actions, Subjects];
       if (action && subject) {
-
-        console.log("Se asigna el permiso: ", action, subject)
-
         can(action, subject);
       }
     });
