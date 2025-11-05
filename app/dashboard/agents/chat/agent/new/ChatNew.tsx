@@ -48,6 +48,16 @@ export default function ChatClient({ agentId }: ChatClientProps) {
     if (startChatSessionResult.isSuccess) {
       router.push(`/dashboard/agents/chat/agent/${startChatSessionResult.data.sessionId}`);
     }
+
+    if (startChatSessionResult.isError) {
+      if ((startChatSessionResult.error as any)?.data?.message) {
+        toasts.error(
+          "error",
+          (startChatSessionResult.error as any)?.data?.message
+        )
+        return;
+      }
+    }
   }, [startChatSessionResult])
 
   useEffect(() => {
@@ -155,6 +165,15 @@ export default function ChatClient({ agentId }: ChatClientProps) {
                 </div>
               ))
             )}
+
+            {/* Loader cuando el bot está respondiendo */}
+            {startChatSessionResult.isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-muted p-3 rounded-lg text-sm animate-pulse">
+                  Estoy pensando dame un momento...
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
@@ -180,11 +199,11 @@ export default function ChatClient({ agentId }: ChatClientProps) {
                       handleSendMessage();
                     }
                   }}
-                  disabled={(selectedAgent.monthlyTokenLimit == 0)}
+                  disabled={startChatSessionResult.isLoading || (selectedAgent.monthlyLimit == 0)}
                 />
               </div>
 
-              {selectedAgent.monthlyTokenLimit == 0 && (
+              {selectedAgent.monthlyLimit == 0 && (
                 <Alert className="mt-3 rounded-xl">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>

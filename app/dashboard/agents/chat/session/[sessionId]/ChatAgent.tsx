@@ -271,11 +271,11 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                       handleSendMessage();
                     }
                   }}
-                  disabled={messageChatSessionResult.isLoading || (selectedAgent.monthlyTokenLimit == 0)}
+                  disabled={messageChatSessionResult.isLoading || (selectedAgent.monthlyLimit == 0)}
                 />
               </div>
 
-              {selectedAgent.monthlyTokenLimit == 0 && (
+              {selectedAgent.monthlyLimit == 0 && (
                 <Alert className="mt-3 rounded-xl">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
