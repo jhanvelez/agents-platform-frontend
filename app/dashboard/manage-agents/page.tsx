@@ -221,10 +221,15 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-950">Gestión de Agentes IA</h2>
           <p className="text-muted-foreground text-slate-700">Administra la configuración y propiedades de tus agentes</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Crear Agente
-        </Button>
+        {ability.can("create", "agents") && (
+          <Button onClick={() => {
+            setIsDialogOpen(true);
+            setCurrentAgent(undefined);
+          }} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Crear Agente
+          </Button>
+        )}
       </div>
 
       {/* Filtros */}
@@ -354,20 +359,24 @@ export default function LandingPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <div className="pt-1">
-                        <ToggleField
-                          label="Estado"
-                          checked={agent.isActive}
-                          onChange={(e) => {
-                            toggleAgent({
-                              id: agent.id
-                            });
-                          }}
-                        />
-                      </div>
+                      {ability.can("update", "agents") && (
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(agent)}>
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {ability.can("delete", "agents") && (
+                        <div className="pt-1">
+                          <ToggleField
+                            label="Estado"
+                            checked={agent.isActive}
+                            onChange={(e) => {
+                              toggleAgent({
+                                id: agent.id
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
