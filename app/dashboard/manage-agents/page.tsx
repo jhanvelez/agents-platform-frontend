@@ -342,7 +342,7 @@ export default function LandingPage() {
                       onClick={() => {
                         setAgentId(agent.id);
                         setMaxLimit(agent.tenant.plan.monthlyTokenLimit);
-                        setMonthlyTokenLimit(agent.monthlyTokenLimit);
+                        setMonthlyTokenLimit(agent.monthlyLimit);
                         setIsDialogTokensOpen(true);
                       }}
                     >
@@ -362,7 +362,6 @@ export default function LandingPage() {
                             toggleAgent({
                               id: agent.id
                             });
-                            //console.log("nuevo estado:", e.target.checked)
                           }}
                         />
                       </div>
@@ -618,14 +617,15 @@ export default function LandingPage() {
                         error={!!errors.tokens}
                         textError={errors.tokens}
                       />
-                      {values.tokens > maxLimit && (
-                        <p className="text-red-600 font-medium mt-2">
-                          El valor ingresado supera el límite mensual permitido por el plan.  
-                          El máximo permitido es <span className="font-semibold">{maxLimit.toLocaleString()}</span> tokens.
-                        </p>
-                      )}
                     </div>
                   </div>
+
+                  {values.tokens > maxLimit && (
+                    <p className="text-red-600 font-medium text-sm mt-2">
+                      El valor ingresado supera el límite mensual permitido por el plan.
+                      El máximo permitido es <span className="font-semibold text-red-800">{maxLimit.toLocaleString()}</span> tokens.
+                    </p>
+                  )}
                 </div>
 
                 <DialogFooter>
