@@ -84,14 +84,10 @@ export default function LoginPage() {
               <span className="text-sm">Agente Técnico</span>
               <Badge variant="destructive">Error</Badge>
             </div>
-            <div className="text-xs text-muted-foreground mt-4">
-              🚧 Próximamente: Indicadores visuales en tiempo real con AgentOps
-            </div>
           </CardContent>
         </Card>
 
         {/* Métricas del Sistema */}
-
         {systemMetricsData ? (
           <Card>
             <CardHeader>
@@ -145,60 +141,6 @@ export default function LoginPage() {
           </Card>
         )}
 
-        {/* Latencia API N8N */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              Latencia API N8N
-            </CardTitle>
-            <CardDescription>Tiempo de respuesta de las APIs de N8N</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Webhook Chat</span>
-              <Badge variant="default">120ms</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Webhook Detalles</span>
-              <Badge variant="default">95ms</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">API Status</span>
-              <Badge variant="destructive">Timeout</Badge>
-            </div>
-            <div className="text-xs text-muted-foreground mt-4">🚧 Próximamente: Monitoreo automático de latencia</div>
-          </CardContent>
-        </Card>
-
-        {/* Alertas Recientes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Alertas Recientes
-            </CardTitle>
-            <CardDescription>Notificaciones y alertas del sistema</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 p-2 border rounded">
-              <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Agente Técnico desconectado</p>
-                <p className="text-xs text-muted-foreground">Hace 15 minutos</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-2 border rounded">
-              <Clock className="h-4 w-4 text-yellow-500 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Latencia alta detectada</p>
-                <p className="text-xs text-muted-foreground">Hace 1 hora</p>
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground mt-4">🚧 Próximamente: Sistema de alertas automáticas</div>
-          </CardContent>
-        </Card>
-
         {/* Logs del Sistema */}
         <Card>
           <CardHeader>
@@ -218,33 +160,8 @@ export default function LoginPage() {
             <div className="text-xs font-mono bg-muted p-2 rounded">
               [2024-01-15 10:28:33] ERROR: Agente Técnico - Conexión perdida
             </div>
-            <div className="text-xs text-muted-foreground mt-4">🚧 Próximamente: Logs detallados en tiempo real</div>
           </CardContent>
         </Card>
-
-        {/* Integración AgentOps 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Integración AgentOps
-            </CardTitle>
-            <CardDescription>Métricas avanzadas de agentes IA</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center py-8">
-              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-sm font-medium mb-2">Próximamente</p>
-              <p className="text-xs text-muted-foreground">Integración con AgentOps para métricas avanzadas:</p>
-              <ul className="text-xs text-muted-foreground mt-2 space-y-1">
-                <li>• Trazabilidad de conversaciones</li>
-                <li>• Métricas de rendimiento</li>
-                <li>• Análisis de comportamiento</li>
-                <li>• Optimización automática</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>*/}
       </div>
     </div>
   );
