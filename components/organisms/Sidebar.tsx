@@ -1,10 +1,14 @@
-"use client"
+"use client";
 
 import Image from "next/image";
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAbility } from "@/providers/AbilityProvider";
+import type { Actions, Subjects } from "@/lib/casl";
 import {
   Bot,
   BarChart3,
@@ -21,13 +25,7 @@ import {
   ChevronRight,
   Brain,
 } from "lucide-react";
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useAbility } from "@/providers/AbilityProvider"
-import type { Actions, Subjects } from "@/lib/casl";
 
-// Logo
 import Logo from "@/public/logo.png";
 
 export interface MenuItem {
@@ -44,14 +42,14 @@ export interface MenuItem {
 export const menuItems: MenuItem[] = [
   { id: "dashboard", label: "Vista General", icon: Home, path: "/dashboard", ability: { action: "read", subject: "dashboard" } },
   { id: "agents", label: "Agentes IA", icon: Bot, path: "/dashboard/agents", ability: { action: "read", subject: "agents" } },
-  { id: "manage-agents", label: "Gestión agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents", ability: { action: "manage", subject: "manage-agents" } },
+  { id: "manage-agents", label: "Gestión agentes IA", icon: SettingsIcon, path: "/dashboard/manage-agents", ability: { action: "read", subject: "manage-agents" } },
   { id: "models-ia", label: "Modelos IA", icon: Brain, path: "/dashboard/models-ia", ability: { action: "read", subject: "model" } },
-  { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management", ability: { action: "manage", subject: "business" } },
+  { id: "business-management", label: "Gestión de empresas", icon: Building2, path: "/dashboard/business-management", ability: { action: "read", subject: "business" } },
   { id: "plans", label: "Planes", icon: SparklesIcon, path: "/dashboard/plans", ability: { action: "read", subject: "plans" } },
   { id: "conversations", label: "Historial conversaciones", icon: MessageSquare, path: "/dashboard/conversations", ability: { action: "read", subject: "conversation" } },
   { id: "analytics", label: "Análisis consultas", icon: BarChart3, path: "/dashboard/analytics", ability: { action: "read", subject: "analytics" } },
   { id: "monitoring", label: "Monitoreo", icon: Activity, path: "/dashboard/monitoring", ability: { action: "read", subject: "monitoring" } },
-  { id: "users", label: "Gestión usuarios", icon: Users, path: "/dashboard/users", ability: { action: "read", subject: "user" } },
+  { id: "users", label: "Gestión usuarios", icon: Users, path: "/dashboard/users", ability: { action: "read", subject: "users" } },
   { id: "roles", label: "Gestión roles", icon: Shield, path: "/dashboard/roles", ability: { action: "read", subject: "roles" } },
   { id: "settings", label: "Configuración", icon: SettingsIcon, path: "/dashboard/settings", ability: { action: "update", subject: "settings" } },
   { id: "profile", label: "Mi perfil", icon: User, path: "/dashboard/profile", ability: { action: "read", subject: "profile" } },
@@ -59,8 +57,31 @@ export const menuItems: MenuItem[] = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const ability = useAbility();
+
+  useEffect(() => {
+    // Espera a que las abilities se carguen completamente
+    const waitForAbility = async () => {
+      // Simulación de carga si el provider tarda en montar las abilities
+      if (!ability || Object.keys(ability.rules || {}).length === 0) {
+        setIsLoading(true);
+      } else {
+        setIsLoading(false);
+      }
+    };
+    waitForAbility();
+  }, [ability]);
+
+  // Mientras se cargan los permisos, muestra un loader elegante
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-64 items-center justify-center bg-primary/5 text-gray-600">
+        <div className="animate-pulse text-sm font-medium">Cargando permisos...</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -69,61 +90,57 @@ export function Sidebar() {
         collapsed ? "w-16" : "w-64"
       )}
     >
-      {/* Header del sidebar */}
-      <div className="flex h-16 items-center justify-between px-4 border-b my-auto bg-white ">
+      {/* Header */}
+      <div className="flex h-16 items-center justify-between px-4 border-b bg-white">
         {!collapsed && (
           <div className="flex items-center">
-            <div className="flex justify-center">
-              <Image
-                src={Logo}
-                alt="ByBinary logo"
-                className="w-24"
-              />
-            </div>
-            <span className="ml-2 text-sm font-semibold text-gray-700">Agentes IA ByBinary</span>
+            <Image src={Logo} alt="ByBinary logo" className="w-24" />
+            <span className="ml-2 text-sm font-semibold text-gray-700">
+              Agentes IA ByBinary
+            </span>
           </div>
         )}
-        <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setCollapsed(!collapsed)}
+          className="h-8 w-8 p-0"
+        >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
 
-      <div>
-        {
-          // ability.can("read", item.ability.subject) 
-        }
-
-      </div>
-
-      {/* Menú */}
+      {/*
+        Menú
+      */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-2">
           {menuItems
-          .filter((item) => ability.can(item.ability.action, item.ability.subject))
-          .map((item) => {
-            const Icon = item.icon
+            .map((item) => {
+              const Icon = item.icon;
+              const itemSegments = item.path.split("/").filter(Boolean);
+              const isActive =
+                pathname === item.path ||
+                (pathname.startsWith(item.path + "/") && itemSegments.length > 1);
 
-            const itemSegments = item.path.split("/").filter(Boolean);
+              const permited = ability.can("read", item.ability.subject);
 
-            const isActive =
-              pathname === item.path ||
-              (pathname.startsWith(item.path + "/") &&
-                itemSegments.length > 1);
-
-            return (
-              <Link key={item.id} href={item.path} className="block">
-                <Button
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={cn("w-full justify-start", collapsed && "justify-center px-2")}
-                >
-                  <Icon className="h-5 w-5" />
-                  {!collapsed && <span className="ml-2">{item.label}</span>}
-                </Button>
-              </Link>
-            )
-          })}
+              return (
+                permited && (
+                  <Link key={item.id} href={item.path} className="block">
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={cn("w-full justify-start", collapsed && "justify-center px-2")}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {!collapsed && <span className="ml-2">{item.label}</span>}
+                    </Button>
+                  </Link>
+                )
+              );
+            })}
         </nav>
       </ScrollArea>
     </div>
-  )
+  );
 }
