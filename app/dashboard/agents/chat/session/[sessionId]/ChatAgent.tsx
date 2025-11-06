@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useRef } from "react"
 import { Formik } from "formik";
+import ReactMarkdown from "react-markdown";
 import {
   Bot,
   AlertTriangle,
@@ -58,6 +59,8 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent>();
   const [localMessages, setLocalMessages] = useState<any[]>([]);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessionData, refetch: refetchMessages } = useMessagesSessionQuery({ sessionId });
 
@@ -151,6 +154,12 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       setIsDialogOpen(false);
     }
   }, [exportChatResult]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages.length, messageChatSessionResult.isLoading]);
   
 
   return (
@@ -204,7 +213,16 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                         : "bg-white shadow-md"
                     }`}
                   >
-                    <p className="text-sm">{message.text}</p>
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 text-sm text-gray-800">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
+                        li: ({ children }) => <li className="text-sm text-gray-700">{children}</li>,
+                      }}
+                    >
+                      {message.text}
+                    </ReactMarkdown>
+
                     <p className="text-xs opacity-70 mt-1">{formatTime(message.time)}</p>
 
                     {message.sender === "agent" && (
@@ -246,6 +264,8 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                 </div>
               </div>
             )}
+
+            <div ref={scrollRef} />
           </div>
         </ScrollArea>
       </div>
