@@ -24,25 +24,24 @@ import { useMemo } from "react";
 import {
   useMetricsQuery,
 } from '@/store/dashboard/dashboard.api';
-import { string } from "yup";
 
 const tasaExitoData = [
-  { day: "Lun", tasa: 92 },
-  { day: "Mar", tasa: 94 },
-  { day: "Mié", tasa: 89 },
-  { day: "Jue", tasa: 96 },
-  { day: "Vie", tasa: 93 },
-  { day: "Sáb", tasa: 91 },
-  { day: "Dom", tasa: 95 },
+  { day: "Lun", tasa: 0 },
+  { day: "Mar", tasa: 0 },
+  { day: "Mié", tasa: 0 },
+  { day: "Jue", tasa: 0 },
+  { day: "Vie", tasa: 0 },
+  { day: "Sáb", tasa: 0 },
+  { day: "Dom", tasa: 0 },
 ];
 
 const tiempoRespuestaData = [
-  { hour: "00", tiempo: 1.2 },
-  { hour: "04", tiempo: 0.8 },
-  { hour: "08", tiempo: 2.1 },
-  { hour: "12", tiempo: 2.8 },
-  { hour: "16", tiempo: 3.2 },
-  { hour: "20", tiempo: 2.5 },
+  { hour: "00", tiempo: 0 },
+  { hour: "04", tiempo: 0 },
+  { hour: "08", tiempo: 0 },
+  { hour: "12", tiempo: 0 },
+  { hour: "16", tiempo: 0 },
+  { hour: "20", tiempo: 0 },
 ];
 
 interface chatDistributionProps {
