@@ -1,6 +1,6 @@
 
 "use client";
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
-  RefreshCw,
   Bot,
   MessageSquare,
   Search,
@@ -84,10 +83,6 @@ export default function LoginPage() {
           <h2 className="text-3xl font-bold tracking-tight">Agentes IA</h2>
           <p className="text-slate-700">Gestiona y chatea con tus agentes de inteligencia artificial</p>
         </div>
-        <Button variant="outline" className="gap-2 bg-transparent">
-          <RefreshCw className="h-4 w-4" />
-          Refrescar Lista
-        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

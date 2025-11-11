@@ -1,23 +1,27 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UserState {
-  id: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  tenant: string | null;
-  role: string | null;
+  id: number;
+  firstName: string;
+  lastName: string;
+  documentId: string;
+  phoneNumber: string;
+  email: string;
   permissions: string[];
+  tenant: null;
+  role: string;
 }
 
 const initialState: UserState = {
-  id: null,
-  firstName: null,
-  lastName: null,
-  email: null,
-  role: null,
-  tenant: null,
+  id: 0,
+  firstName: "",
+  lastName: "",
+  documentId: "",
+  phoneNumber: "",
+  email: "",
   permissions: [],
+  tenant: null,
+  role: "",
 };
 
 export const userSlice = createSlice({

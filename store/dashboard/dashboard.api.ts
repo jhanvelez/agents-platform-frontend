@@ -9,12 +9,17 @@ export const usersApi = api
     overrideExisting: false,
     endpoints: (builder) => ({
       metrics: builder.query({
-        query: ({search}) => ({
+        query: () => ({
           url: `/dashboard/metrics`,
           method: RequestMethod.GET,
-          params: camelToSnake({
-            search,
-          }),
+        }),
+        providesTags: ["agents"],
+        transformResponse: (response: any) => snakeToCamel(response.data),
+      }),
+      metricsTenant: builder.query({
+        query: ({ tenantId }) => ({
+          url: `/dashboard/metrics/${tenantId}`,
+          method: RequestMethod.GET,
         }),
         providesTags: ["agents"],
         transformResponse: (response: any) => snakeToCamel(response.data),
@@ -24,4 +29,5 @@ export const usersApi = api
 
 export const {
   useMetricsQuery,
+  useMetricsTenantQuery,
 } = usersApi;

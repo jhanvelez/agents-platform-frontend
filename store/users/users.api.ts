@@ -53,6 +53,24 @@ export const usersApi = api
           method: RequestMethod.PUT,
         }),
       }),
+      userResetPassword: builder.mutation({
+        query: (body: { currentPassword: string; newPassword: string }) => ({
+          url: "/users/reset-password",
+          method: "POST",
+          body: {
+            currentPassword: body.currentPassword,
+            newPassword: body.newPassword,
+          },
+        }),
+      }),
+      updateInfo: builder.mutation({
+        invalidatesTags: ["user"],
+        query: (body: { firstName: string; lastName: string; documentId: string; phoneNumber: string; email: string }) => ({
+          url: `/users/update-info`,
+          method: RequestMethod.PUT,
+          body: snakeToCamel(body),
+        }),
+      }),
     }),
   });
 
@@ -62,4 +80,6 @@ export const {
   useStoreUserMutation,
   useUpdateUserMutation,
   useToggleUserMutation,
+  useUpdateInfoMutation,
+  useUserResetPasswordMutation,
 } = usersApi;

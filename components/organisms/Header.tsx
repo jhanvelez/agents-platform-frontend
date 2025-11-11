@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, BuildingOfficeIcon } from '@heroicons/react/20/solid'
 import { useUser } from "@/hooks/useUser";
+import { useAbility } from "@/providers/AbilityProvider";
 
 export function Header() {
-  const router = useRouter();
   const user = useUser();
+  const router = useRouter();
+  const ability = useAbility();
 
   return (
     <header className="border-b border-gray-200 bg-white">
@@ -64,6 +66,7 @@ export function Header() {
                     className="block w-full px-4 py-2 text-left text-sm text-gray-700 data-focus:bg-gray-100 data-focus:text-gray-900 data-focus:outline-hidden"
                     onClick={async () => {
                       localStorage.clear();
+                      ability.update([]);
                       await router.push("/");
                     }}
                   >

@@ -1,37 +1,108 @@
 'use client'
 
-import { useState } from 'react'
-import { Dialog, DialogBackdrop, DialogPanel, TransitionChild } from '@headlessui/react';
-import {
-  ChartBarSquareIcon,
-  Cog6ToothIcon,
-  FolderIcon,
-  GlobeAltIcon,
-  ServerIcon,
-  SignalIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
-import { ChevronDownIcon } from '@heroicons/react/16/solid';
-import { classNames } from "@/shared/utils/classnames";
+import { RefreshCw } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Formik } from "formik";
+import { useDispatch } from "react-redux";
+import { setUser, clearUser } from "@/store/users/userSlice";
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { RefreshCw } from "lucide-react"
 
-const navigation = [
-  { name: 'Projects', href: '#', icon: FolderIcon, current: false },
-  { name: 'Deployments', href: '#', icon: ServerIcon, current: false },
-  { name: 'Activity', href: '#', icon: SignalIcon, current: false },
-  { name: 'Domains', href: '#', icon: GlobeAltIcon, current: false },
-  { name: 'Usage', href: '#', icon: ChartBarSquareIcon, current: false },
-  { name: 'Settings', href: '#', icon: Cog6ToothIcon, current: true },
-]
-const teams = [
-  { id: 1, name: 'Planetaria', href: '#', initial: 'P', current: false },
-  { id: 2, name: 'Protocol', href: '#', initial: 'P', current: false },
-  { id: 3, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
-]
+import { useUser } from "@/hooks/useUser";
+
+import {
+  userBasicInitialValues,
+  userBasicValidationSchema,
+  passwordChangeInitialValues,
+  passwordChangeValidationSchema,
+} from "@/shared/schemas/user.schema"
+
+import {
+  useUpdateInfoMutation,
+  useUserResetPasswordMutation,
+} from "@/store/users/users.api"
+import { useUserQuery } from "@/store/users/users.api";
+
+import { toasts } from '@/lib/toasts'
 
 export default function Profile() {
+  const user = useUser();
+  const dispatch = useDispatch();
+
+  const { data: userData, isError } = useUserQuery({ search: "" });
+
+  function mapPermissions(apiPermissions: { action: string; subject: string }[]) {
+    return apiPermissions.map((p) => {
+      const [subject, action] = p.action.split(".");
+      const formattedSubject = subject.charAt(0) + subject.slice(1);
+
+      return `${action}:${formattedSubject}`;
+    });
+  }
+
+  useEffect(() => {
+    if (userData) {
+      dispatch(
+        setUser({
+          id: userData.id,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          documentId: userData.documentId,
+          phoneNumber: userData.phoneNumber,
+          tenant: userData.tenant,
+          permissions: mapPermissions(userData.roles[0]?.permissions || []),
+          role: userData.roles[0]?.name || "viewer",
+        })
+      );
+    }
+
+    if (isError) {
+      dispatch(clearUser());
+    }
+  }, [userData, isError, dispatch]);
+
+  const [resetPassword, resetPasswordResult] = useUserResetPasswordMutation();
+
+  useEffect(() => {
+    if (resetPasswordResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "Contraseña cambiada con exito."
+      );
+    }
+
+    if (resetPasswordResult.isError) {
+      toasts.error(
+        "Error",
+        "No se pudo cambiar la contraseña."
+      );
+    }
+  }, [resetPasswordResult]);
+
+  const [updateInfo, updateInfoResult] = useUpdateInfoMutation();
+
+  useEffect(() => {
+    if (updateInfoResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "Información actualizada correctamente"
+      );
+
+    }
+
+    if (updateInfoResult.isError) {
+      if ((updateInfoResult.error as any)?.data?.message) {
+        toasts.error(
+          "error",
+          (updateInfoResult.error as any)?.data?.message
+        )
+        return;
+      }
+    }
+  }, [updateInfoResult]);
+
   return (
     <>
       <div className="space-y-6">
@@ -54,7 +125,7 @@ export default function Profile() {
           </Button>
         </div>
 
-        <div className="xl:pl-72">
+        <div className="justify-center">
           <main>
             {/* Settings forms */}
             <div className="divide-y divide-gray-200 dark:divide-white/10">
@@ -66,77 +137,122 @@ export default function Profile() {
                   </p>
                 </div>
 
-                <div className="md:col-span-2">
-                  <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-                    <div className="col-span-full flex items-center gap-x-8">
-                      <img
-                        alt=""
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                        className="size-24 flex-none rounded-lg bg-gray-100 object-cover outline -outline-offset-1 outline-black/5 dark:bg-gray-800 dark:outline-white/10"
-                      />
-                      <div>
-                        <Button
-                          onClick={(() => {
-                            console.log('ok')
-                          })}
-                        >
-                          Camiar imagen
-                        </Button>
-                        <p className="mt-2 text-xs/5 text-gray-500 dark:text-gray-400">JPG, GIF or PNG. 1MB max.</p>
+                <Formik
+                  enableReinitialize
+                  initialValues={user ?? userBasicInitialValues}
+                  validationSchema={userBasicValidationSchema}
+                  onSubmit={(values, formikHelopers) => {
+                    updateInfo(values);
+                    formikHelopers.resetForm();
+                  }}
+                >
+                  {({ handleSubmit, errors, handleChange, values }) => {
+                    return (
+                      <div className="md:col-span-2">
+                        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
+                          <div className="col-span-full flex items-center gap-x-8">
+                            <img
+                              alt=""
+                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                              className="size-24 flex-none rounded-lg bg-gray-100 object-cover outline -outline-offset-1 outline-black/5 dark:bg-gray-800 dark:outline-white/10"
+                            />
+                            <div>
+                              <Button
+                                onClick={(() => {
+                                  console.log('ok')
+                                })}
+                              >
+                                Camiar imagen
+                              </Button>
+                              <p className="mt-2 text-xs/5 text-gray-500 dark:text-gray-400">JPG, GIF or PNG. 1MB max.</p>
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <Input
+                              id="documentId"
+                              name="documentId"
+                              type="number"
+                              label="N` de documento"
+                              span="Obligatorio"
+                              value={values.documentId}
+                              onChange={handleChange}
+                              error={!!errors.documentId}
+                              textError={errors.documentId}
+                            />
+                          </div>
+                          <div className="sm:col-span-3">
+                            <Input
+                              id="phoneNumber"
+                              name="phoneNumber"
+                              type="number"
+                              label="Telefono"
+                              span="Opcional"
+                              value={values.phoneNumber}
+                              onChange={handleChange}
+                              error={!!errors.phoneNumber}
+                              textError={errors.phoneNumber}
+                            />
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <Input
+                              id="firstName"
+                              name="firstName"
+                              type="text"
+                              label="Nombres(s)"
+                              span="Obligatorio"
+                              autoComplete="off"
+                              onChange={handleChange}
+                              value={values.firstName}
+                              error={!!errors.firstName}
+                              textError={errors.firstName}
+                            />
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <Input
+                              id="lastName"
+                              name="lastName"
+                              type="text"
+                              label="Apellidos"
+                              span="Obligatorio"
+                              onChange={handleChange}
+                              value={values.lastName}
+                              error={!!errors.lastName}
+                              textError={errors.lastName}
+                            />
+                          </div>
+
+                          <div className="col-span-full">
+                            <Input
+                              id="email"
+                              name="email"
+                              type="email"
+                              label="Correo eléctronico"
+                              span="Obligatorio"
+                              onChange={handleChange}
+                              value={values.email}
+                              error={!!errors.email}
+                              textError={errors.email}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-8 flex">
+                          <Button
+                            onClick={(() => {
+                              console.log(errors)
+                              handleSubmit();
+                            })}
+                          >
+                            Guardar cambios
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="text"
-                        label="Nombres(s)"
-                        span="Obligatorio"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="text"
-                        label="Apellidos"
-                        span="Obligatorio"
-                      />
-                    </div>
-
-                    <div className="col-span-full">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="email"
-                        label="Correo eléctronico"
-                        span="Obligatorio"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="number"
-                        label="Telefono"
-                        span="Obligatorio"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-8 flex">
-                    <Button
-                      onClick={(() => {
-                        console.log('ok')
-                      })}
-                    >
-                      Guardar
-                    </Button>
-                  </div>
-                </div>
+                    );
+                  }}
+                </Formik>
               </div>
 
               <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
@@ -147,46 +263,79 @@ export default function Profile() {
                   </p>
                 </div>
 
-                <div className="md:col-span-2">
-                  <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-                    <div className="col-span-full">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="password"
-                        label="Contraseña actual"
-                        span="Obligatorio"
-                      />
-                    </div>
+                <Formik
+                  enableReinitialize
+                  initialValues={passwordChangeInitialValues}
+                  validationSchema={passwordChangeValidationSchema}
+                  onSubmit={(values, formikHelopers) => {
+                    resetPassword({
+                      currentPassword: values.currentPassword,
+                      newPassword: values.newPassword,
+                    });
 
-                    <div className="col-span-full">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="password"
-                        label="Contraseña nueva"
-                        span="Obligatorio"
-                      />
-                    </div>
+                    formikHelopers.resetForm();
+                  }}
+                >
+                  {({ handleSubmit, errors, handleChange, values }) => {
+                    return (
+                      <div className="md:col-span-2">
+                        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
+                          <div className="col-span-full">
+                            <Input
+                              id="currentPassword"
+                              name="currentPassword"
+                              type="password"
+                              label="Contraseña actual"
+                              span="Obligatorio"
+                              value={values.currentPassword}
+                              onChange={handleChange}
+                              error={!!errors.currentPassword}
+                              textError={errors.currentPassword}
+                            />
+                          </div>
 
-                    <div className="col-span-full">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="password"
-                        label="Repetir contraseña nueva"
-                        span="Obligatorio"
-                      />
-                    </div>
-                  </div>
+                          <div className="col-span-full">
+                            <Input
+                              id="newPassword"
+                              name="newPassword"
+                              type="password"
+                              label="Contraseña nueva"
+                              span="Obligatorio"
+                              value={values.newPassword}
+                              onChange={handleChange}
+                              error={!!errors.newPassword}
+                              textError={errors.newPassword}
+                            />
+                          </div>
 
-                  <div className="mt-8 flex">
-                    <Button
-                    >
-                      Guardar
-                    </Button>
-                  </div>
-                </div>
+                          <div className="col-span-full">
+                            <Input
+                              id="confirmPassword"
+                              name="confirmPassword"
+                              type="password"
+                              label="Repetir contraseña nueva"
+                              span="Obligatorio"
+                              value={values.confirmPassword}
+                              onChange={handleChange}
+                              error={!!errors.confirmPassword}
+                              textError={errors.confirmPassword}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-8 flex">
+                          <Button
+                            onClick={() => {
+                              handleSubmit();
+                            }}
+                          >
+                            Actualizar contraseña
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  }}
+                </Formik>
               </div>
 
               {/*

@@ -16,14 +16,27 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts"
-import { Bot, Activity, MessageSquare, TrendingUp } from "lucide-react"
+import { Bot, Activity, MessageSquare, TrendingUp, RefreshCw } from "lucide-react"
+import { skipToken } from "@reduxjs/toolkit/query";
 import { useAuth } from '@/hooks/use-auth'
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+
+import { useAbility } from "@/providers/AbilityProvider";
+
+import SelectSearch from "@/components/ui/SelectSearch"
+import { Label } from "@/components/ui/label"
 
 // API
 import {
   useMetricsQuery,
+  useMetricsTenantQuery,
 } from '@/store/dashboard/dashboard.api';
+import {
+  useTenantsQuery,
+} from "@/store/business-managent/business-managent.api";
+
+// Type
+import { Tenant } from "@/types/tenant"
 
 const tasaExitoData = [
   { day: "Lun", tasa: 0 },
@@ -52,26 +65,33 @@ interface chatDistributionProps {
 
 export default function DashboardPage() {
   const { isAuthenticated } = useAuth();
+  const [tenantId, setTenantId] = useState("");
 
-  const { data: DashboardMetricsData, refetch: refetchDashboardMetrics } = useMetricsQuery({ search: "" });
+  const ability = useAbility();
+
+const canReadAll = ability.can("read", "business");
+
+  const { data: atentsData } = useTenantsQuery({ search: "" })
+
+  const { data: DashboardMetricsData } = canReadAll ?
+    useMetricsTenantQuery( tenantId ? { tenantId } : skipToken ) :
+    useMetricsQuery({})
 
   const kpiData = useMemo(() => {
     if (!DashboardMetricsData) return [];
-
-    console.log(DashboardMetricsData.messages)
 
     return [
       {
         title: "Agentes Totales",
         value: DashboardMetricsData.agents.total,
-        change: `+${DashboardMetricsData.agents.growth} este mes`,
+        change: `+ ${Math.round(DashboardMetricsData.agents.growth * 100) / 100} este mes`,
         icon: Bot,
         color: "text-blue-600",
       },
       {
         title: "Agentes Activos",
         value: DashboardMetricsData.agents.active,
-        change: `${DashboardMetricsData.agents.growth}% activos`,
+        change: `${Math.round(DashboardMetricsData.agents.growth * 100) / 100}% activos`,
         icon: Activity,
         color: "text-green-600",
       },
@@ -106,9 +126,32 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Vista General</h2>
-        <p className="text-muted-foreground">Resumen del rendimiento de tus agentes IA</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Vista General</h2>
+          <p className="text-muted-foreground">Resumen del rendimiento de tus agentes IA</p>
+        </div>
+        {ability.can("read", "business") && (
+          <div className="w-64">
+            <Label htmlFor="tenantId">Empresa</Label>
+            <SelectSearch
+              colourOptions={atentsData && atentsData.map((dep: Tenant) => {
+                return {
+                  value: dep.id,
+                  label: dep.name,
+                }
+              })}
+              name="tenantId"
+              value={tenantId}
+              onChange={(value: any) => {
+
+                console.log(value.value)
+
+                setTenantId(value.value)
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* KPI Cards */}

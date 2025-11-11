@@ -26,9 +26,11 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
           firstName: userData.firstName,
           lastName: userData.lastName,
           email: userData.email,
+          documentId: userData.documentId,
+          phoneNumber: userData.phoneNumber,
           tenant: userData.tenant,
-          role: userData.roles[0]?.name || "viewer",
           permissions: mapPermissions(userData.roles[0]?.permissions || []),
+          role: userData.roles[0]?.name || "viewer",
         })
       );
     }
