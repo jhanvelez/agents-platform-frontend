@@ -36,7 +36,6 @@ import { Rol } from "@/types/Rol"
 
 // Lib
 import { toasts } from "@/lib/toasts"
-import { el } from "date-fns/locale";
 
 interface Document {
   id: string;

@@ -141,6 +141,8 @@ export default function LandingPage() {
   const handleEdit = (agent: Agent) => {
     setCurrentAgent({
       ...agent,
+      modelId: agent.model.id,
+      tenantId: agent.tenant.id,
       abilities: String(agent.abilities).split(',').slice(0, 2),
 
     });

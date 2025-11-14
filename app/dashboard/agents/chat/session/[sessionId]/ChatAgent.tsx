@@ -75,10 +75,10 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
     }
 
     if (messageChatSessionResult.isError) {
-      if ((messageChatSessionResult.error as any)?.data?.message) {
-        toasts.error(
+      if ((messageChatSessionResult.error as any)?.data) {
+        toasts.warning(
           "error",
-          (messageChatSessionResult.error as any)?.data?.message
+          (messageChatSessionResult.error as any)?.data?.message,
         )
         return;
       }

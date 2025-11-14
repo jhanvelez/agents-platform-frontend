@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react"
-import { Formik } from "formik";
+import { useEffect, useState, useRef } from "react"
+import { Formik, FormikProps } from "formik";
 import { TrashIcon } from "lucide-react";
 import { Plus, Edit, Trash2, Sparkle } from "lucide-react";
 
@@ -58,7 +58,6 @@ import {
 
 // Types
 import { User } from "@/types/User"
-import { Agent } from "@/types/agent"
 import { Rol } from "@/types/Rol"
 
 // Schemas
@@ -69,12 +68,14 @@ import {
 
 export default function Users() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
+
+  const formikRef = useRef(null);
 
   // API hooks
   const { data: usersData, refetch: refetchAtents } = useUsersQuery({ search: "" });
   const { data: rolesData, } = useRolesQuery({ search: "" });
   const [storeAtent, storeAtentResult] = useStoreUserMutation();
+  const [updateUser, updateUserResult] = useUpdateUserMutation();
   const [toggleUser, toggleUserResult] = useToggleUserMutation();
 
   useEffect(() => {
@@ -90,21 +91,55 @@ export default function Users() {
 
       refetchAtents();
       setIsDialogOpen(false);
+
+      if (formikRef.current) {
+        formikRef.current?.resetForm();
+      }
     }
 
-    if (storeAtentResult.error) {
-      toasts.error(
-        "Error",
-        "El usuario no se ha registrado exitosamente."
-      );
-
-      setIsDialogOpen(false);
+    if (storeAtentResult.isError) {
+      if ((storeAtentResult.error as any)?.data) {
+        toasts.warning(
+          "error",
+          (storeAtentResult.error as any)?.data?.message,
+        )
+        return;
+      }
     }
   }, [storeAtentResult]);
 
-  const [currentTenant, setCurrentTenant] = useState<User>();
-  const handleEdit = (agent: User) => {
-    setCurrentTenant(agent);
+  useEffect(() => {
+    if (updateUserResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "El usuario se ha actualizado exitosamente."
+      );
+
+      refetchAtents();
+      setIsDialogOpen(false);
+
+      if (formikRef.current) {
+        formikRef.current?.resetForm();
+      }
+    }
+
+    if (updateUserResult.isError) {
+      if ((updateUserResult.error as any)?.data) {
+        toasts.warning(
+          "error",
+          (updateUserResult.error as any)?.data?.message,
+        )
+        return;
+      }
+    }
+  }, [updateUserResult]);
+
+  const [currentUser, setCurrentUser] = useState<User>();
+  const handleEdit = (user: User) => {
+    setCurrentUser({
+      ...user,
+      roles: [user.roles[0].id],
+    });
     setIsDialogOpen(true);
   }
 
@@ -133,7 +168,10 @@ export default function Users() {
             Aquí puedes gestionar todas los planes. Crea, edita o elimina usuarios según sea necesario.
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+        <Button onClick={() => {
+          setIsDialogOpen(true);
+          setCurrentUser(undefined);
+        }} className="gap-2">
           <Plus className="h-4 w-4" />
           Usuario
         </Button>
@@ -205,12 +243,22 @@ export default function Users() {
       {/* Modal Crear/Editar */}
       <Formik
         enableReinitialize
-        initialValues={currentTenant ?? userInitialValues }
+        innerRef={formikRef}
+        initialValues={{
+          ...userInitialValues,
+          ...currentUser,
+          isEditing: !!currentUser,
+        }}
         validationSchema={userValidationSchema}
         onSubmit={(values, formikHelopers) => {
-          storeAtent(values);
-          formikHelopers.resetForm();
-          setIsDialogOpen(false);
+          if (currentUser) {
+            updateUser({
+              id: currentUser.id,
+              userData: values,
+            });
+          }else{
+            storeAtent(values);
+          }
         }}
       >
         {({ handleSubmit, errors, handleChange, setFieldValue, values }) => {
@@ -218,10 +266,10 @@ export default function Users() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingAgent ? "Editar Agente" : "Crear nuevo usuario"}</DialogTitle>
+                  <DialogTitle>{currentUser ? "Editar Usuario" : "Crear nuevo usuario"}</DialogTitle>
                   <DialogDescription>
-                    {editingAgent
-                      ? "Edita los detalles del plan"
+                    {currentUser
+                      ? "Edita la información del usuario."
                       : "Ingrese la información para crear un nuevo usuario."}
                   </DialogDescription>
                 </DialogHeader>
@@ -312,17 +360,19 @@ export default function Users() {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        label="Contraseña"
-                        span="Obligatorio"
-                        value={values.password}
-                        onChange={handleChange}
-                      />
-                    </div>
+                    {!currentUser && (
+                      <div className="space-y-2">
+                        <Input
+                          id="password"
+                          name="password"
+                          type="password"
+                          label="Contraseña"
+                          span="Obligatorio"
+                          value={values.password}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="documentType">Roles</Label>
@@ -353,7 +403,7 @@ export default function Users() {
                     console.log(errors)
                     handleSubmit();
                   }}>
-                    {editingAgent ? "Actualizar" : "Crear"}
+                    {currentUser ? "Actualizar" : "Crear"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

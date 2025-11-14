@@ -1,4 +1,3 @@
-// src/lib/toasts.ts
 import { toast } from 'react-hot-toast'
 import {
   CheckCircleIcon,

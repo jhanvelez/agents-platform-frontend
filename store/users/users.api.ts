@@ -36,14 +36,10 @@ export const usersApi = api
       }),
       updateUser: builder.mutation({
         invalidatesTags: ["user"],
-        query: ({ id, active, name, email }: any) => ({
+        query: ({ id, userData }: any) => ({
           url: `/users/${id}`,
           method: RequestMethod.PUT,
-          body: snakeToCamel({
-            active,
-            name,
-            email,
-          }),
+          body: userData
         }),
       }),
       toggleUser: builder.mutation({

@@ -23,7 +23,12 @@ export const userValidationSchema = Yup.object({
     .nullable()
     .matches(/^\+?[0-9\s\-()]{7,20}$/, "Número de telefono invalido"),
   email: Yup.string().email("Formato del email invalido").required(FIELD_REQUIRED_MESSAGE),
-  password: Yup.string().required(FIELD_REQUIRED_MESSAGE),
+    password: Yup.string().when("isEditing", {
+    is: false,
+    then: schema =>
+      schema.required("La contraseña es obligatoria").min(6, "Mínimo 6 caracteres"),
+    otherwise: schema => schema.notRequired(),
+  }),
   serviceStartSate: Yup.date().nullable(),
   isEmailConfirmed: Yup.boolean(),
   roles: Yup.array().of(Yup.string()).required(FIELD_REQUIRED_MESSAGE),
