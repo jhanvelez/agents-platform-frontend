@@ -221,7 +221,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
             }}
           >
             <XCircle className="h-3 w-3" />
-            Terminar
+            Terminar conversación
           </Button>
           <Button
             size="sm"
