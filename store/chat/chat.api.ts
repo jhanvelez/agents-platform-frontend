@@ -51,6 +51,13 @@ export const chatSessionApi = api
           body: { email },
         }),
       }),
+      closeChatSession: builder.mutation({
+        invalidatesTags: ["chat-session"],
+        query: ({ sessionId }: { sessionId: string }) => ({
+          url: `chat-sessions/${sessionId}/close`,
+          method: RequestMethod.POST,
+        }),
+      }),
       SearchInChatSessions: builder.query({
         query: ({ query }) => ({
           url: `/search`,
@@ -95,6 +102,7 @@ export const {
   useMessageChatSessionMutation,
   useChatSessionsQuery,
   useExportChatSessionMutation,
+  useCloseChatSessionMutation,
   useSearchInChatSessionsQuery,
   useChatAgentConversationsQuery,
   useChatAgentAnalyticsQuery,

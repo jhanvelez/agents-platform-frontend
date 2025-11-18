@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState, useMemo, useRef } from "react"
+import { useRouter } from "next/navigation";
 import { Formik } from "formik";
+
 import ReactMarkdown from "react-markdown";
 import {
   Bot,
   AlertTriangle,
+  XCircle,
   FileDown,
   ThumbsUp,
   ThumbsDown,
@@ -33,6 +36,8 @@ import {
   useMessagesSessionQuery,
   useMessageChatSessionMutation,
   useExportChatSessionMutation,
+  useCloseChatSessionMutation,
+  useChatSessionsQuery,
 } from "@/store/chat/chat.api"
 import {
   useFeedbackMessageMutation
@@ -55,6 +60,7 @@ interface ChatClientProps {
 };
 
 export default function ChatClient({ sessionId }: ChatClientProps) {
+  const router = useRouter();
   const [chatMessage, setChatMessage] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent>();
@@ -63,8 +69,6 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const { data: sessionData, refetch: refetchMessages } = useMessagesSessionQuery({ sessionId });
-
-  const [exportChat, exportChatResult] = useExportChatSessionMutation();
 
   const [messageChatSession, messageChatSessionResult] = useMessageChatSessionMutation();
 
@@ -98,6 +102,14 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
   }, [feedbackMessageResult]);
 
   useEffect(() => {
+    if (sessionData && sessionData.isActive === false) {
+      toasts.info(
+        "Info",
+        "La sesión de chat está cerrada. No se pueden enviar más mensajes."
+      );
+      router.push('/dashboard/agents');
+    }
+  
     if (sessionData) {
       setSelectedAgent(sessionData.agent);
     }
@@ -137,6 +149,8 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
     setChatMessage("");
   };
 
+  const [exportChat, exportChatResult] = useExportChatSessionMutation();
+
   useEffect(() => {
     if (exportChatResult.isSuccess) {
       toasts.success(
@@ -154,6 +168,27 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       setIsDialogOpen(false);
     }
   }, [exportChatResult]);
+
+  const { refetch: refetchSessions } = useChatSessionsQuery({ search: "" });
+  
+  const [closeSession, closeSessionResult] = useCloseChatSessionMutation();
+  useEffect(() => {
+    if (closeSessionResult.isSuccess) {
+      refetchSessions();
+      toasts.success(
+        "Exito",
+        "La sesión se ha cerrado correctamente."
+      );
+      router.push('/dashboard/agents');
+    }
+
+    if (closeSessionResult.error) {
+      toasts.error(
+        "Error",
+        "No se ha podido cerrar la sesión correctamente."
+      );
+    }
+  }, [closeSessionResult]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -177,16 +212,28 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
             </CardDescription>
           )}
         </CardHeader>
-        <Button
-          size="sm"
-          className="gap-1 bg-green-600 hover:bg-green-700 "
-          onClick={() => {
-            setIsDialogOpen(true);
-          }}
-        >
-          <FileDown className="h-3 w-3" />
-          Exportar conversación
-        </Button>
+        <div className="space-x-1">
+          <Button
+            size="sm"
+            className="gap-1 bg-gray-600 hover:bg-gray-700 "
+            onClick={() => {
+              closeSession({ sessionId });
+            }}
+          >
+            <XCircle className="h-3 w-3" />
+            Terminar
+          </Button>
+          <Button
+            size="sm"
+            className="gap-1 bg-green-600 hover:bg-green-700 "
+            onClick={() => {
+              setIsDialogOpen(true);
+            }}
+          >
+            <FileDown className="h-3 w-3" />
+            Exportar
+          </Button>
+        </div>
       </CardTitle>
 
       {/* Chat Body con scroll */}

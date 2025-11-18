@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Brain,
+  BookOpen,
 } from "lucide-react";
 
 import Logo from "@/public/logo.png";
@@ -51,6 +52,7 @@ export const menuItems: MenuItem[] = [
   { id: "monitoring", label: "Monitoreo", icon: Activity, path: "/dashboard/monitoring", ability: { action: "read", subject: "monitoring" } },
   { id: "users", label: "Gestión usuarios", icon: Users, path: "/dashboard/users", ability: { action: "read", subject: "users" } },
   { id: "roles", label: "Gestión roles", icon: Shield, path: "/dashboard/roles", ability: { action: "read", subject: "roles" } },
+  { id: "manuals", label: "Manuales", icon: BookOpen, path: "/dashboard/manuals", ability: { action: "read", subject: "dashboard" } },
   { id: "settings", label: "Configuración", icon: SettingsIcon, path: "/dashboard/settings", ability: { action: "update", subject: "settings" } },
   { id: "profile", label: "Mi perfil", icon: User, path: "/dashboard/profile", ability: { action: "read", subject: "profile" } },
 ];
