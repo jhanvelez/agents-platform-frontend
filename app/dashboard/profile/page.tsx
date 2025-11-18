@@ -1,6 +1,6 @@
 'use client'
 
-import { RefreshCw } from "lucide-react"
+import { RefreshCw, User, Mail, Phone, IdCard, Shield, Key, Camera, Save, CheckCircle, AlertCircle } from "lucide-react"
 import { useEffect, useState } from "react";
 import { Formik } from "formik";
 import { useDispatch } from "react-redux";
@@ -8,6 +8,8 @@ import { setUser, clearUser } from "@/store/users/userSlice";
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { useUser } from "@/hooks/useUser";
 
@@ -29,17 +31,30 @@ import { toasts } from '@/lib/toasts'
 export default function Profile() {
   const user = useUser();
   const dispatch = useDispatch();
+  const [activeSection, setActiveSection] = useState('personal');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { data: userData, isError } = useUserQuery({ search: "" });
+  const { data: userData, isError, refetch } = useUserQuery({ search: "" });
 
   function mapPermissions(apiPermissions: { action: string; subject: string }[]) {
     return apiPermissions.map((p) => {
       const [subject, action] = p.action.split(".");
       const formattedSubject = subject.charAt(0) + subject.slice(1);
-
       return `${action}:${formattedSubject}`;
     });
   }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      toasts.success("Éxito", "Perfil actualizado correctamente");
+    } catch (error) {
+      toasts.error("Error", "No se pudo actualizar el perfil");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (userData) {
@@ -67,17 +82,11 @@ export default function Profile() {
 
   useEffect(() => {
     if (resetPasswordResult.isSuccess) {
-      toasts.success(
-        "Exito",
-        "Contraseña cambiada con exito."
-      );
+      toasts.success("Éxito", "Contraseña cambiada con éxito");
     }
 
     if (resetPasswordResult.isError) {
-      toasts.error(
-        "Error",
-        "No se pudo cambiar la contraseña."
-      );
+      toasts.error("Error", "No se pudo cambiar la contraseña");
     }
   }, [resetPasswordResult]);
 
@@ -85,152 +94,196 @@ export default function Profile() {
 
   useEffect(() => {
     if (updateInfoResult.isSuccess) {
-      toasts.success(
-        "Exito",
-        "Información actualizada correctamente"
-      );
-
+      toasts.success("Éxito", "Información actualizada correctamente");
     }
 
     if (updateInfoResult.isError) {
       if ((updateInfoResult.error as any)?.data?.message) {
-        toasts.error(
-          "error",
-          (updateInfoResult.error as any)?.data?.message
-        )
-        return;
+        toasts.error("Error", (updateInfoResult.error as any)?.data?.message);
       }
     }
   }, [updateInfoResult]);
 
+  // Navegación lateral
+  const navigationItems = [
+    { id: 'personal', label: 'Información Personal', icon: User },
+    { id: 'security', label: 'Seguridad', icon: Shield },
+  ];
+
   return (
-    <>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Mi Perfil</h2>
-            <p className="text-muted-foreground text-sm">
-              Edite tu perfil, y todos sus datos personales.
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+          <div className="mb-4 lg:mb-0">
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              Mi Perfil
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
+              Gestiona tu información personal y configuración de seguridad
             </p>
           </div>
           <Button
             variant="outline"
-            className="gap-2 bg-transparent"
-            onClick={() => {
-              console.log('OK')
-            }}
+            className="gap-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
           >
-            <RefreshCw className="h-4 w-4" />
-            Refrescar perfil
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Actualizando...' : 'Actualizar'}
           </Button>
         </div>
 
-        <div className="justify-center">
-          <main>
-            {/* Settings forms */}
-            <div className="divide-y divide-gray-200 dark:divide-white/10">
-              <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-                <div>
-                  <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Información personal</h2>
-                  <p className="mt-1 text-sm/6 text-gray-500 dark:text-gray-400">
-                    Utilice una dirección permanente donde pueda recibir correo.
-                  </p>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Navegación Lateral */}
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="text-lg">Navegación</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <nav className="space-y-1">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveSection(item.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                        activeSection === item.id
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-500 text-blue-700 dark:text-blue-300'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </CardContent>
+          </Card>
 
-                <Formik
-                  enableReinitialize
-                  initialValues={user ?? userBasicInitialValues}
-                  validationSchema={userBasicValidationSchema}
-                  onSubmit={(values, formikHelopers) => {
-                    updateInfo(values);
-                    formikHelopers.resetForm();
-                  }}
-                >
-                  {({ handleSubmit, errors, handleChange, values }) => {
-                    return (
-                      <div className="md:col-span-2">
-                        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-                          <div className="col-span-full flex items-center gap-x-8">
-                            <img
-                              alt=""
-                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                              className="size-24 flex-none rounded-lg bg-gray-100 object-cover outline -outline-offset-1 outline-black/5 dark:bg-gray-800 dark:outline-white/10"
-                            />
-                            <div>
-                              <Button
-                                onClick={(() => {
-                                  console.log('ok')
-                                })}
-                              >
-                                Camiar imagen
-                              </Button>
-                              <p className="mt-2 text-xs/5 text-gray-500 dark:text-gray-400">JPG, GIF or PNG. 1MB max.</p>
+          {/* Contenido Principal */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Información Personal */}
+            {activeSection === 'personal' && (
+              <Card>
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <User className="h-6 w-6 text-blue-500" />
+                    <div>
+                      <CardTitle>Información Personal</CardTitle>
+                      <CardDescription>
+                        Actualiza tu información personal y datos de contacto
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Formik
+                    enableReinitialize
+                    initialValues={user ?? userBasicInitialValues}
+                    validationSchema={userBasicValidationSchema}
+                    onSubmit={(values, formikHelpers) => {
+                      updateInfo(values);
+                      formikHelpers.resetForm();
+                    }}
+                  >
+                    {({ handleSubmit, errors, handleChange, values, dirty }) => (
+                      <div className="space-y-6">
+                        {/* Avatar y Foto de Perfil */}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <div className="flex-shrink-0">
+                            <div className="relative">
+                              <img
+                                alt="Foto de perfil"
+                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                                className="size-24 rounded-lg bg-gray-100 object-cover shadow-md border-2 border-white dark:border-gray-700"
+                              />
+                              <button className="absolute -bottom-2 -right-2 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-colors">
+                                <Camera className="h-4 w-4" />
+                              </button>
                             </div>
                           </div>
-
-                          <div className="sm:col-span-3">
-                            <Input
-                              id="documentId"
-                              name="documentId"
-                              type="number"
-                              label="N` de documento"
-                              span="Obligatorio"
-                              value={values.documentId}
-                              onChange={handleChange}
-                              error={!!errors.documentId}
-                              textError={errors.documentId}
-                            />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                              Foto de perfil
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                              JPG, PNG o GIF. Tamaño máximo 1MB.
+                            </p>
+                            <Button variant="outline" size="sm" className="gap-2">
+                              <Camera className="h-4 w-4" />
+                              Cambiar imagen
+                            </Button>
                           </div>
-                          <div className="sm:col-span-3">
-                            <Input
-                              id="phoneNumber"
-                              name="phoneNumber"
-                              type="number"
-                              label="Telefono"
-                              span="Opcional"
-                              value={values.phoneNumber}
-                              onChange={handleChange}
-                              error={!!errors.phoneNumber}
-                              textError={errors.phoneNumber}
-                            />
-                          </div>
+                        </div>
 
-                          <div className="sm:col-span-3">
-                            <Input
-                              id="firstName"
-                              name="firstName"
-                              type="text"
-                              label="Nombres(s)"
-                              span="Obligatorio"
-                              autoComplete="off"
-                              onChange={handleChange}
-                              value={values.firstName}
-                              error={!!errors.firstName}
-                              textError={errors.firstName}
-                            />
-                          </div>
+                        {/* Información del Usuario */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Input
+                            id="firstName"
+                            name="firstName"
+                            type="text"
+                            label="Nombres"
+                            span="Obligatorio"
+                            autoComplete="given-name"
+                            onChange={handleChange}
+                            value={values.firstName}
+                            error={!!errors.firstName}
+                            textError={errors.firstName}
+                          />
 
-                          <div className="sm:col-span-3">
-                            <Input
-                              id="lastName"
-                              name="lastName"
-                              type="text"
-                              label="Apellidos"
-                              span="Obligatorio"
-                              onChange={handleChange}
-                              value={values.lastName}
-                              error={!!errors.lastName}
-                              textError={errors.lastName}
-                            />
-                          </div>
+                          <Input
+                            id="lastName"
+                            name="lastName"
+                            type="text"
+                            label="Apellidos"
+                            span="Obligatorio"
+                            autoComplete="family-name"
+                            onChange={handleChange}
+                            value={values.lastName}
+                            error={!!errors.lastName}
+                            textError={errors.lastName}
+                          />
 
-                          <div className="col-span-full">
+                          <Input
+                            id="documentId"
+                            name="documentId"
+                            type="number"
+                            label="Número de documento"
+                            span="Obligatorio"
+                            onChange={handleChange}
+                            value={values.documentId}
+                            error={!!errors.documentId}
+                            textError={errors.documentId}
+                          />
+
+                          <Input
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            type="tel"
+                            label="Teléfono"
+                            span="Opcional"
+                            autoComplete="tel"
+                            onChange={handleChange}
+                            value={values.phoneNumber}
+                            error={!!errors.phoneNumber}
+                            textError={errors.phoneNumber}
+                          />
+
+                          <div className="md:col-span-2">
                             <Input
                               id="email"
                               name="email"
                               type="email"
-                              label="Correo eléctronico"
+                              label="Correo electrónico"
                               span="Obligatorio"
+
+                              autoComplete="email"
                               onChange={handleChange}
                               value={values.email}
                               error={!!errors.email}
@@ -239,170 +292,173 @@ export default function Profile() {
                           </div>
                         </div>
 
-                        <div className="mt-8 flex">
+                        {/* Información Adicional */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div>
+                            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                              Rol del sistema
+                            </span>
+                            <div className="mt-1">
+                              <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300">
+                                {user?.role || 'Usuario'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                              Organización
+                            </span>
+                            <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                              {user?.tenant || 'No especificada'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Botón de Guardar */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            {dirty ? (
+                              <>
+                                <AlertCircle className="h-4 w-4 text-amber-500" />
+                                Tienes cambios sin guardar
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                Todos los cambios guardados
+                              </>
+                            )}
+                          </div>
                           <Button
-                            onClick={(() => {
-                              console.log(errors)
-                              handleSubmit();
-                            })}
+                            onClick={() => handleSubmit()}
+                            disabled={!dirty || updateInfoResult.isLoading}
+                            className="gap-2"
                           >
-                            Guardar cambios
+                            <Save className="h-4 w-4" />
+                            {updateInfoResult.isLoading ? 'Guardando...' : 'Guardar Cambios'}
                           </Button>
                         </div>
                       </div>
-                    );
-                  }}
-                </Formik>
-              </div>
+                    )}
+                  </Formik>
+                </CardContent>
+              </Card>
+            )}
 
-              <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-                <div>
-                  <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Cambiar contraseña</h2>
-                  <p className="mt-1 text-sm/6 text-gray-500 dark:text-gray-400">
-                    Actualiza la contraseña asociada a tu cuenta.
-                  </p>
-                </div>
-
-                <Formik
-                  enableReinitialize
-                  initialValues={passwordChangeInitialValues}
-                  validationSchema={passwordChangeValidationSchema}
-                  onSubmit={(values, formikHelopers) => {
-                    resetPassword({
-                      currentPassword: values.currentPassword,
-                      newPassword: values.newPassword,
-                    });
-
-                    formikHelopers.resetForm();
-                  }}
-                >
-                  {({ handleSubmit, errors, handleChange, values }) => {
-                    return (
-                      <div className="md:col-span-2">
-                        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-                          <div className="col-span-full">
-                            <Input
-                              id="currentPassword"
-                              name="currentPassword"
-                              type="password"
-                              label="Contraseña actual"
-                              span="Obligatorio"
-                              value={values.currentPassword}
-                              onChange={handleChange}
-                              error={!!errors.currentPassword}
-                              textError={errors.currentPassword}
-                            />
-                          </div>
-
-                          <div className="col-span-full">
-                            <Input
-                              id="newPassword"
-                              name="newPassword"
-                              type="password"
-                              label="Contraseña nueva"
-                              span="Obligatorio"
-                              value={values.newPassword}
-                              onChange={handleChange}
-                              error={!!errors.newPassword}
-                              textError={errors.newPassword}
-                            />
-                          </div>
-
-                          <div className="col-span-full">
-                            <Input
-                              id="confirmPassword"
-                              name="confirmPassword"
-                              type="password"
-                              label="Repetir contraseña nueva"
-                              span="Obligatorio"
-                              value={values.confirmPassword}
-                              onChange={handleChange}
-                              error={!!errors.confirmPassword}
-                              textError={errors.confirmPassword}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="mt-8 flex">
-                          <Button
-                            onClick={() => {
-                              handleSubmit();
-                            }}
-                          >
-                            Actualizar contraseña
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  }}
-                </Formik>
-              </div>
-
-              {/*
-              <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-                <div>
-                  <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Log out other sessions</h2>
-                  <p className="mt-1 text-sm/6 text-gray-500 dark:text-gray-400">
-                    Please enter your password to confirm you would like to log out of your other sessions across all of
-                    your devices.
-                  </p>
-                </div>
-
-                <form className="md:col-span-2">
-                  <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-                    <div className="col-span-full">
-                      <label
-                        htmlFor="logout-password"
-                        className="block text-sm/6 font-medium text-gray-900 dark:text-white"
-                      >
-                        Your password
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="logout-password"
-                          name="password"
-                          type="password"
-                          autoComplete="current-password"
-                          className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                        />
-                      </div>
+            {/* Seguridad */}
+            {activeSection === 'security' && (
+              <Card>
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <Shield className="h-6 w-6 text-green-500" />
+                    <div>
+                      <CardTitle>Seguridad y Contraseña</CardTitle>
+                      <CardDescription>
+                        Actualiza tu contraseña y configuración de seguridad
+                      </CardDescription>
                     </div>
                   </div>
-
-                  <div className="mt-8 flex">
-                    <button
-                      type="submit"
-                      className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
-                    >
-                      Log out other sessions
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <div className="grid max-w-7xl grid-cols-1 gap-x-8 gap-y-10 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8">
-                <div>
-                  <h2 className="text-base/7 font-semibold text-gray-900 dark:text-white">Delete account</h2>
-                  <p className="mt-1 text-sm/6 text-gray-500 dark:text-gray-400">
-                    No longer want to use our service? You can delete your account here. This action is not reversible.
-                    All information related to this account will be deleted permanently.
-                  </p>
-                </div>
-
-                <form className="flex items-start md:col-span-2">
-                  <button
-                    type="submit"
-                    className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 dark:bg-red-500 dark:shadow-none dark:hover:bg-red-400"
+                </CardHeader>
+                <CardContent>
+                  <Formik
+                    enableReinitialize
+                    initialValues={passwordChangeInitialValues}
+                    validationSchema={passwordChangeValidationSchema}
+                    onSubmit={(values, formikHelpers) => {
+                      resetPassword({
+                        currentPassword: values.currentPassword,
+                        newPassword: values.newPassword,
+                      });
+                      formikHelpers.resetForm();
+                    }}
                   >
-                    Yes, delete my account
-                  </button>
-                </form>
-              </div>
-              */}
-            </div>
-          </main>
+                    {({ handleSubmit, errors, handleChange, values, dirty }) => (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-6">
+                          <Input
+                            id="currentPassword"
+                            name="currentPassword"
+                            type="password"
+                            label="Contraseña actual"
+                            span="Obligatorio"
+                            onChange={handleChange}
+                            value={values.currentPassword}
+                            error={!!errors.currentPassword}
+                            textError={errors.currentPassword}
+                          />
+
+                          <Input
+                            id="newPassword"
+                            name="newPassword"
+                            type="password"
+                            label="Contraseña nueva"
+                            span="Obligatorio"
+                            onChange={handleChange}
+                            value={values.newPassword}
+                            error={!!errors.newPassword}
+                            textError={errors.newPassword}
+                          />
+
+                          <Input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            label="Repetir contraseña nueva"
+                            span="Obligatorio"
+                            onChange={handleChange}
+                            value={values.confirmPassword}
+                            error={!!errors.confirmPassword}
+                            textError={errors.confirmPassword}
+                          />
+                        </div>
+
+                        {/* Consejos de Seguridad */}
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                          <h4 className="font-semibold text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-2">
+                            <Shield className="h-4 w-4" />
+                            Consejos de seguridad
+                          </h4>
+                          <ul className="text-sm text-amber-700 dark:text-amber-400 space-y-1">
+                            <li>• Usa al menos 8 caracteres</li>
+                            <li>• Incluye mayúsculas, minúsculas y números</li>
+                            <li>• Evita contraseñas comunes o personales</li>
+                            <li>• No reutilices contraseñas antiguas</li>
+                          </ul>
+                        </div>
+
+                        {/* Botón de Actualizar */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            {dirty ? (
+                              <>
+                                <AlertCircle className="h-4 w-4 text-amber-500" />
+                                Listo para actualizar contraseña
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                Completa el formulario para cambiar contraseña
+                              </>
+                            )}
+                          </div>
+                          <Button
+                            onClick={() => handleSubmit()}
+                            disabled={!dirty || resetPasswordResult.isLoading}
+                            className="gap-2 bg-green-600 hover:bg-green-700"
+                          >
+                            <Key className="h-4 w-4" />
+                            {resetPasswordResult.isLoading ? 'Actualizando...' : 'Actualizar Contraseña'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </Formik>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
