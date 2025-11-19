@@ -350,10 +350,7 @@ export default function LandingPage() {
                       type="button"
                       className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 dark:bg-white/10 dark:text-white dark:ring-gray-700 dark:hover:bg-white/20"
                       onClick={() => {
-                        setAgentId(agent.id);
-                        setMaxLimit(agent.tenant.plan.monthlyTokenLimit);
-                        setMonthlyTokenLimit(agent.monthlyLimit);
-                        setIsDialogTokensOpen(true);
+                        router.push(`/dashboard/manage-agents/tokens/${agent.id}`);
                       }}
                     >
                       <BadgeIcon className="h-6 w-6" />
@@ -588,82 +585,6 @@ export default function LandingPage() {
               </DialogContent>
             </Dialog>
           )
-        }}
-      </Formik>
-
-      {/* Modal Asignar tokens */}
-      <Formik
-        enableReinitialize
-        initialValues={{
-          tokens: monthlyTokenLimit
-        }}
-        validationSchema={tokensUsageValidationSchema}
-        onSubmit={(values, formikHelopers) => {
-          assignTokens({
-            agentId: agentId,
-            tokensUsed: 0,
-            totalTokensAssigned: Number(values.tokens),
-          });
-          
-          formikHelopers.resetForm();
-          setIsDialogTokensOpen(false);
-        }}
-      >
-        {({ handleSubmit, errors, handleChange, setFieldValue, values }) => {
-
-          return (
-            <Dialog open={isDialogTokensOpen} onOpenChange={setIsDialogTokensOpen}>
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Asignar toknes</DialogTitle>
-                  <DialogDescription>
-                    Ingrese la cantidad de tokens a asignar al agente.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Tokens *</Label>
-                      <Input
-                        id="tokens"
-                        name="tokens"
-                        type="number"
-                        value={values.tokens}
-                        onChange={handleChange}
-                        placeholder="Ejemplo: 1000"
-                        error={!!errors.tokens}
-                        textError={errors.tokens}
-                      />
-                    </div>
-                  </div>
-
-                  {values.tokens > maxLimit && (
-                    <p className="text-red-600 font-medium text-sm mt-2">
-                      El valor ingresado supera el límite mensual permitido por el plan.
-                      El máximo permitido es <span className="font-semibold text-red-800">{maxLimit.toLocaleString()}</span> tokens.
-                    </p>
-                  )}
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDialogTokensOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={!errors || (values.tokens > maxLimit)}
-                    onClick={() => {
-                      console.log(errors)
-                      handleSubmit();
-                    }}
-                  >
-                    Asignar Tokens
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          );
         }}
       </Formik>
     </div>
