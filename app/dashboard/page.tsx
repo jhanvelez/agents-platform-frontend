@@ -108,12 +108,12 @@ export default function DashboardPage() {
   }, [DashboardMetricsData]);
 
   const tasaExitoData = useMemo(() => {
-    if (!DashboardMetricsData?.data) return [];
+    if (!DashboardMetricsData) return [];
     return DashboardMetricsData.successMetrics.weeklyTrend;
   }, [DashboardMetricsData]);
 
   const tiempoRespuestaData = useMemo(() => {
-    if (!DashboardMetricsData?.data) return [];
+    if (!DashboardMetricsData) return [];
     return DashboardMetricsData.responseTimes;
   }, [DashboardMetricsData]);
 

@@ -316,8 +316,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                       onClick={() => closeSession({ sessionId })}
                       disabled={closeSessionResult.isLoading}
                     >
-                      <XCircle className="h-4 w-4" />
-                      <span className="hidden sm:inline">Terminar</span>
+                      Terminar chat
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
