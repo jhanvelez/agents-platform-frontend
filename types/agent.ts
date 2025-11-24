@@ -17,4 +17,5 @@ export interface Agent {
   tenantId: string;
   isActive: boolean;
   monthlyLimit: number;
+  initialMessage: string;
 }

@@ -18,7 +18,7 @@ import {
   useUpdatePublicConfigMutation,
   useTogglePublicConfigMutation,
   useRegenerateSlugMutation,
-} from "@/store/public-chat/public-chat.api";
+} from "@/store/public-chat/private-public-chat.api";
 
 interface IframeConfigProps {
   agentId: string;
@@ -118,7 +118,7 @@ export default function IframeConfig({ agentId }: IframeConfigProps) {
   };
 
   const publicUrl = configData?.publicSlug 
-    ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/public/agents/chat/new/${configData.publicSlug}`
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://ia.bybinary.co'}/public/agents/chat/new/${configData.publicSlug}`
     : '';
 
   const embedCode = configData?.publicSlug 

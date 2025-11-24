@@ -73,17 +73,14 @@ export default function PublicChatForm({ agentId }: PublicChatFormProps) {
     }
 
     try {
-      // Usar la mutation de Redux Query
       const sessionData = await createSession({
         configId: configData.id,
         name: userData.name,
       }).unwrap();
 
-      // Redirigir al chat
       router.push(`/public/agents/chat/session/${sessionData.sessionId}`);
       
     } catch (error) {
-      // El error ya se maneja en el useEffect
       console.error("Error creating session:", error);
     }
   };

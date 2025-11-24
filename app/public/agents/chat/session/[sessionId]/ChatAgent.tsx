@@ -45,11 +45,11 @@ import { toasts } from "@/lib/toasts"
 
 // API
 import {
-  useMessagesSessionQuery,
-  useMessageChatSessionMutation,
-  useExportChatSessionMutation,
-  useCloseChatSessionMutation,
-} from "@/store/chat/chat.api"
+  useGetSessionMessagesQuery,
+  useSendPublicMessageMutation,
+  useClosePublicSessionMutation,
+  useExportPublicSessionMutation,
+} from "@/store/public-chat/public-chat.api"
 import {
   useFeedbackMessageMutation
 } from "@/store/chat/chat-message.api"
@@ -83,9 +83,9 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { data: sessionData, refetch: refetchMessages } = useMessagesSessionQuery({ sessionId });
+  const { data: sessionData, refetch: refetchMessages } = useGetSessionMessagesQuery(sessionId);
 
-  const [messageChatSession, messageChatSessionResult] = useMessageChatSessionMutation();
+  const [messageChatSession, messageChatSessionResult] = useSendPublicMessageMutation();
 
   useEffect(() => {
     if (messageChatSessionResult.isSuccess) {
@@ -122,7 +122,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
         "Información",
         "La sesión de chat está cerrada. No se pueden enviar más mensajes."
       );
-      router.push('/dashboard/agents');
+      window.close();
     }
   
     if (sessionData) {
@@ -152,18 +152,15 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       time: new Date().toISOString(),
     };
 
-    // Mostrar mensaje del usuario inmediatamente
     setLocalMessages((prev) => [...prev, tempMessage]);
 
-    // Enviar al backend
     messageChatSession({
       sessionId,
-      message: chatMessage,
+      content: chatMessage,
     });
 
     setChatMessage("");
-    
-    // Auto-focus después de enviar
+
     setTimeout(() => {
       textareaRef.current?.focus();
     }, 100);
@@ -180,7 +177,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
     }
   };
 
-  const [exportChat, exportChatResult] = useExportChatSessionMutation();
+  const [exportChat, exportChatResult] = useExportPublicSessionMutation();
 
   useEffect(() => {
     if (exportChatResult.isSuccess) {
@@ -200,7 +197,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
     }
   }, [exportChatResult]);
   
-  const [closeSession, closeSessionResult] = useCloseChatSessionMutation();
+  const [closeSession, closeSessionResult] = useClosePublicSessionMutation();
   useEffect(() => {
     if (closeSessionResult.isSuccess) {
       toasts.success(
@@ -309,7 +306,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                       size="sm"
                       variant="outline"
                       className="gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
-                      onClick={() => closeSession({ sessionId })}
+                      onClick={() => closeSession(sessionId)}
                       disabled={closeSessionResult.isLoading}
                     >
                       Terminar chat
@@ -351,7 +348,26 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
                       <Bot className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      ¡Hola! Soy {selectedAgent?.name}
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0 text-sm leading-relaxed">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="text-sm">{children}</li>,
+                          code: ({ children }) => (
+                            <code className="bg-black/20 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">
+                              {children}
+                            </code>
+                          ),
+                          pre: ({ children }) => (
+                            <pre className="bg-black/10 dark:bg-white/5 p-3 rounded-lg overflow-x-auto text-xs my-2">
+                              {children}
+                            </pre>
+                          ),
+                        }}
+                      >
+                        {selectedAgent?.initialMessage.replace(/[{}]/g, '')}
+                      </ReactMarkdown>
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
                       {selectedAgent?.description || 'Estoy aquí para ayudarte. ¿En qué puedo asistirte hoy?'}
