@@ -297,6 +297,7 @@ export default function LandingPage() {
                 <TableHead>Data para entrenamiento</TableHead>
                 <TableHead>Usuarios</TableHead>
                 <TableHead>Asignar Tokens</TableHead>
+                <TableHead>Generar Iframe</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -354,6 +355,17 @@ export default function LandingPage() {
                       }}
                     >
                       <BadgeIcon className="h-6 w-6" />
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      type="button"
+                      className="relative -ml-px inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 dark:bg-white/10 dark:text-white dark:ring-gray-700 dark:hover:bg-white/20"
+                      onClick={() => {
+                        router.push(`/dashboard/manage-agents/iframe/${agent.id}`);
+                      }}
+                    >
+                      Iframe
                     </Button>
                   </TableCell>
                   <TableCell>
