@@ -79,10 +79,6 @@ export default function Users() {
   const [toggleUser, toggleUserResult] = useToggleUserMutation();
 
   useEffect(() => {
-    console.log(usersData)
-  }, [usersData])
-
-  useEffect(() => {
     if (storeAtentResult.isSuccess) {
       toasts.success(
         "Exito",
@@ -138,7 +134,7 @@ export default function Users() {
   const handleEdit = (user: User) => {
     setCurrentUser({
       ...user,
-      roles: user.roles[0] ? [user.roles[0].id] : [],
+      roles: user.roles.length > 0 ? [user.roles[0].id] : [],
     });
     setIsDialogOpen(true);
   }
