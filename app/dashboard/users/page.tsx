@@ -72,7 +72,7 @@ export default function Users() {
   const formikRef = useRef(null);
 
   // API hooks
-  const { data: usersData, refetch: refetchAtents } = useUsersQuery({ search: "" });
+  const { data: usersData, refetch: refetchUsers } = useUsersQuery({ search: "" });
   const { data: rolesData, } = useRolesQuery({ search: "" });
   const [storeAtent, storeAtentResult] = useStoreUserMutation();
   const [updateUser, updateUserResult] = useUpdateUserMutation();
@@ -89,7 +89,7 @@ export default function Users() {
         "El usuario se ha registrado exitosamente."
       );
 
-      refetchAtents();
+      refetchUsers();
       setIsDialogOpen(false);
 
       if (formikRef.current) {
@@ -115,7 +115,7 @@ export default function Users() {
         "El usuario se ha actualizado exitosamente."
       );
 
-      refetchAtents();
+      refetchUsers();
       setIsDialogOpen(false);
 
       if (formikRef.current) {
@@ -147,8 +147,9 @@ export default function Users() {
     if (toggleUserResult.isSuccess) {
       toasts.success(
         "Exito",
-        "El cambio se ha realizado exitosamente."
+        "Operación realizada exitosamente."
       );
+      refetchUsers();
     }
 
     if (toggleUserResult.error) {

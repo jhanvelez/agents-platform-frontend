@@ -68,6 +68,7 @@ export function Header() {
                       localStorage.clear();
                       ability.update([]);
                       await router.push("/");
+                      location.reload();
                     }}
                   >
                     Cerrar sesión

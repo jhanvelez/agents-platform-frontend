@@ -137,7 +137,6 @@ export default function LoginPage() {
             validationSchema={authValidationSchema}
             onSubmit={(values, formikHelopers) => {
               login(values);
-              formikHelopers.resetForm();
             }}
           >
             {({ handleSubmit, errors, handleChange, values, isSubmitting }) => {
