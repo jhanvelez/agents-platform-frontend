@@ -17,7 +17,7 @@ export const userInitialValues = {
 export const userValidationSchema = Yup.object({
   firstName: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   lastName: Yup.string().required(FIELD_REQUIRED_MESSAGE),
-  documentType: Yup.string().nullable(),
+  documentType: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   documentId: Yup.string().required(FIELD_REQUIRED_MESSAGE),
   phoneNumber: Yup.string()
     .nullable()

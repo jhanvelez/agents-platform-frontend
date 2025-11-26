@@ -74,6 +74,7 @@ export default function Users() {
   // API hooks
   const { data: usersData, refetch: refetchUsers } = useUsersQuery({ search: "" });
   const { data: rolesData, } = useRolesQuery({ search: "" });
+
   const [storeAtent, storeAtentResult] = useStoreUserMutation();
   const [updateUser, updateUserResult] = useUpdateUserMutation();
   const [toggleUser, toggleUserResult] = useToggleUserMutation();
@@ -313,7 +314,7 @@ export default function Users() {
                             {value: '2', label: "NIT"},
                             {value: '3', label: "TI"}
                           ].map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                            <SelectItem key={option.value} value={option.label}>
                               {option.label}
                             </SelectItem>
                           ))}
@@ -372,7 +373,7 @@ export default function Users() {
                     )}
 
                     <div className="space-y-2">
-                      <Label htmlFor="documentType">Roles</Label>
+                      <Label htmlFor="roles">Roles</Label>
                       <Select
                         value={values.roles[0]}
                         onValueChange={(value) => setFieldValue("roles", [value])}
@@ -397,7 +398,6 @@ export default function Users() {
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={!errors} onClick={() => {
-                    console.log(errors)
                     handleSubmit();
                   }}>
                     {currentUser ? "Actualizar" : "Crear"}
