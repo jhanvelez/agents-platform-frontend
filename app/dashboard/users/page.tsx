@@ -138,7 +138,7 @@ export default function Users() {
   const handleEdit = (user: User) => {
     setCurrentUser({
       ...user,
-      roles: [user.roles[0].id],
+      roles: user.roles[0] ? [user.roles[0].id] : [],
     });
     setIsDialogOpen(true);
   }
