@@ -143,6 +143,17 @@ export default function ChatClient({ agentId }: ChatClientProps) {
     return isActive ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200";
   };
 
+  if (!agentData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Cargando chat...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <div className={`flex flex-col bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10 transition-all duration-300 ${
@@ -150,7 +161,7 @@ export default function ChatClient({ agentId }: ChatClientProps) {
       }`}>
         
         {/* Header Mejorado */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-t-xl">
+        <div className="flex items-center justify-between px-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-t-xl pb-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Mobile Menu Button */}
             <Button

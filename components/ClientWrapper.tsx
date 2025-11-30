@@ -40,5 +40,5 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
     }
   }, [userData, isError, dispatch]);
 
-  return <main className="flex-1 overflow-auto px-6 pt-6">{children}</main>;
+  return <main className="flex-1 overflow-auto px-3 pt-2">{children}</main>;
 }

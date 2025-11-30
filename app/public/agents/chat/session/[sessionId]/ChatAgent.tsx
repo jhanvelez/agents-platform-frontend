@@ -32,7 +32,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
@@ -240,7 +239,7 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
       }`}>
         
         {/* Header Mejorado */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-t-xl">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-t-xl pb-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {/* Mobile Menu Button */}
             <Button
