@@ -8,7 +8,6 @@ import ReactMarkdown from "react-markdown";
 import {
   Bot,
   AlertTriangle,
-  XCircle,
   FileDown,
   ThumbsUp,
   ThumbsDown,
@@ -32,7 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
@@ -123,9 +121,13 @@ export default function ChatClient({ sessionId }: ChatClientProps) {
         "Información",
         "La sesión de chat está cerrada. No se pueden enviar más mensajes."
       );
-      router.push('/dashboard/agents');
+      if (selectedAgent) {
+        router.push(`/dashboard/agents/chat/agent/${selectedAgent.id}`);
+      }else{
+        router.push(`/dashboard/agents`);
+      }
     }
-  
+
     if (sessionData) {
       setSelectedAgent(sessionData.agent);
     }
