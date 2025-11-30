@@ -58,11 +58,17 @@ export const usersApi = api
           method: RequestMethod.DELETE,
         }),
       }),
-
       toggleAgent: builder.mutation({
         invalidatesTags: ["agent"],
         query: ({ id }) => ({
           url: `/agents/${id}/toggle-status`,
+          method: RequestMethod.PATCH,
+        }),
+      }),
+      refreshAgent: builder.mutation({
+        invalidatesTags: ["agent"],
+        query: ({ id }) => ({
+          url: `/agents/${id}/refresh`,
           method: RequestMethod.PATCH,
         }),
       }),
@@ -137,6 +143,7 @@ export const {
   useUpdateAgentMutation,
   useDeleteAgentMutation,
   useToggleAgentMutation,
+  useRefreshAgentMutation,
   useUploadFileAgentMutation,
   useGetFilesAgentQuery,
   useDeleteFileAgentMutation,

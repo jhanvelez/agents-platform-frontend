@@ -33,11 +33,11 @@ import {
   Plus, Edit, Bot,
   Search,
   Filter,
+  RefreshCw,
 } from "lucide-react";
 import {
   ToggleField,
 } from '@/components/ui/Fields'
-
 
 // API
 import {
@@ -45,6 +45,7 @@ import {
   useStoreAgentMutation,
   useUpdateAgentMutation,
   useToggleAgentMutation,
+  useRefreshAgentMutation,
 } from "@/store/manage-agents/manage-agents.api"
 import {
   useModelsAssetsQuery,
@@ -192,6 +193,30 @@ export default function LandingPage() {
     }
   }, [toggleAgentResult]);
 
+  // Nueva función para recargar agentes
+  const [refreshAgent, refreshAgentResult] = useRefreshAgentMutation();
+
+  const handleRefreshAgent = (agentId: string) => {
+    refreshAgent({ id: agentId });
+  };
+
+  useEffect(() => {
+    if (refreshAgentResult.isSuccess) {
+      toasts.success(
+        "Exito",
+        "El agente se ha recargado exitosamente."
+      );
+      refetchAgents();
+    }
+
+    if (refreshAgentResult.error) {
+      toasts.error(
+        "Error",
+        "No se ha podido recargar el agente."
+      );
+    }
+  }, [refreshAgentResult]);
+
   const applyFilters = () => {
     console.log("Se hace el envio de los valores")
   }
@@ -223,15 +248,29 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-950">Gestión de Agentes IA</h2>
           <p className="text-muted-foreground text-slate-700">Administra la configuración y propiedades de tus agentes</p>
         </div>
-        {ability.can("create", "agents") && (
-          <Button onClick={() => {
-            setIsDialogOpen(true);
-            setCurrentAgent(undefined);
-          }} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Crear Agente
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Botón para recargar todos los agentes */}
+          {ability.can("update", "agents") && (
+            <Button 
+              variant="outline" 
+              onClick={() => refetchAgents()} 
+              className="gap-2"
+              disabled={refreshAgentResult.isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshAgentResult.isLoading ? 'animate-spin' : ''}`} />
+              Recargar Agentes
+            </Button>
+          )}
+          {ability.can("create", "agents") && (
+            <Button onClick={() => {
+              setIsDialogOpen(true);
+              setCurrentAgent(undefined);
+            }} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Crear Agente
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filtros */}
@@ -298,6 +337,7 @@ export default function LandingPage() {
                 <TableHead>Usuarios</TableHead>
                 <TableHead>Asignar Tokens</TableHead>
                 <TableHead>Generar Iframe</TableHead>
+                <TableHead>Recargar</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -367,6 +407,20 @@ export default function LandingPage() {
                     >
                       Iframe
                     </Button>
+                  </TableCell>
+                  <TableCell>
+                    {ability.can("update", "agents") && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleRefreshAgent(agent.id)}
+                        disabled={refreshAgentResult.isLoading}
+                        className="gap-1"
+                      >
+                        <RefreshCw className={`h-3 w-3 ${refreshAgentResult.isLoading ? 'animate-spin' : ''}`} />
+                        Recargar
+                      </Button>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
