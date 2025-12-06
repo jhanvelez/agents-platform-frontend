@@ -68,6 +68,7 @@
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
     "react-select": "^5.10.2",
+    "react-tailwindcss-datepicker": "^2.0.0",
     "recharts": "latest",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
